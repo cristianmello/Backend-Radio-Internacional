@@ -25,19 +25,19 @@ const {
 } = require('../controllers/users/');
 
 // Middlewares
-const handleValidationErrors = require('../middleware/HandleValidationErrors');
-const validateLogin = require('../middleware/LoginValidator');
-const validateUserRegister = require('../middleware/ValidateUserRegister');
-const authenticate = require('../middleware/VerifyToken');
-const authorize = require('../middleware/AuthorizeRole');
-const isOwnerOrAdmin = require('../middleware/IsOwnerOrAdmin');
-const loginLimiter = require('../services/rateLimiter/LoginLimiter').rateLimiter;
-const forgotPasswordLimiter = require('../services/rateLimiter/ForgotPasswordLimiter').forgotPasswordLimiter;
-const emailVerificationLimiter = require('../services/rateLimiter/EmailVerificationLimiter').emailVerificationLimiter;
-const validateResetPassword = require('../middleware/ValidateResetPassword');
-const validateChangePassword = require('../middleware/ValidateChangePassword');
-const validateUserUpdate = require('../middleware/ValidateUserUpdate');
-const updateProfileLimiter = require('../services/rateLimiter/UpdateProfileLimiter').rateLimiter;
+const handleValidationErrors = require('../middleware/handlevalidationerrors');
+const validateLogin = require('../middleware/loginvalidator');
+const validateUserRegister = require('../middleware/validateuserregister');
+const authenticate = require('../middleware/verifytoken');
+const authorize = require('../middleware/authorizerole');
+const isOwnerOrAdmin = require('../middleware/isowneroradmin');
+const loginLimiter = require('../services/rateLimiter/loginlimiter').rateLimiter;
+const forgotPasswordLimiter = require('../services/rateLimiter/forgotpasswordlimiter').forgotPasswordLimiter;
+const emailVerificationLimiter = require('../services/rateLimiter/emailverificationlimiter').emailVerificationLimiter;
+const validateResetPassword = require('../middleware/validateresetpassword');
+const validateChangePassword = require('../middleware/validatechangepassword');
+const validateUserUpdate = require('../middleware/validateuserupdate');
+const updateProfileLimiter = require('../services/rateLimiter/updateprofilelimiter').rateLimiter;
 
 
 // Rutas públicas
@@ -70,7 +70,6 @@ router.get('/verify-email', VerifyEmail);
 
 // A partir de aquí, requieren JWT
 router.use(authenticate);
-
 
 router.get('/profile', GetProfile);
 router.put(

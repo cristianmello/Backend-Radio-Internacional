@@ -1,4 +1,4 @@
-const User = require('../../models/User');
+const User = require('../../models/user');
 
 const updateProfile = async (req, res) => {
   const updates = (({ user_name, user_lastname, user_birth, user_phone }) =>

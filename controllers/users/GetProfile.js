@@ -1,4 +1,4 @@
-const User = require('../../models/User');
+const User = require('../../models/user');
 
 // 11) Profile endpoints
 const getProfile = async (req, res) => {

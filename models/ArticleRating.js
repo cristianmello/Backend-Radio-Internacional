@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../database/Connection');
+const sequelize = require('../database/connection');
 
 const ArticleRating = sequelize.define('ArticleRating', {
     rating_code: {

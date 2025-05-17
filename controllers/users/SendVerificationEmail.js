@@ -1,7 +1,7 @@
 // controllers/users/sendVerificationEmail.js
-const redisClient = require('../../services/RedisClient');
+const redisClient = require('../../services/redisclient');
 const nodemailer = require('nodemailer');
-const User = require('../../models/User');
+const User = require('../../models/user');
 const crypto = require('crypto');
 require('dotenv').config();
 

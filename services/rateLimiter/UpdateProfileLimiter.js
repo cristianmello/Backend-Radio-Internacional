@@ -1,4 +1,4 @@
-const redisClient = require('../RedisClient');
+const redisClient = require('../redisclient');
 
 const MAX_REQUESTS_PER_DAY = 4;
 

@@ -7,8 +7,8 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
-const database = require('./database/Connection');
-require('./database/Associations');
+const database = require('./database/connection');
+require('./database/associations');
 
 // Routers
 const userRouter = require('./routes/User');
@@ -16,7 +16,7 @@ const userRouter = require('./routes/User');
 // ... otros routers
 
 // Middleware de manejo de errores y autenticación
-const errorHandler = require('./middleware/ErrorHandler');
+const errorHandler = require('./middleware/errorhandler');
 
 console.log('API para Radio Internacional');
 

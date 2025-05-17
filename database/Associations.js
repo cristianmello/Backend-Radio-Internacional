@@ -1,16 +1,16 @@
-const Role = require('../models/Role');
-const User = require('../models/User');
-const ArticleCategory = require('../models/ArticleCategory');
-const Article = require('../models/Article');
-const CommentArticle = require('../models/CommentArticle');
-const CommentEdit = require('../models/CommentEdit');
-const ArticleEdit = require('../models/ArticleEdit');
-const ArticleRating = require('../models/ArticleRating');
-const FavoriteArticle = require('../models/FavoriteArticle');
-const Membership = require('../models/Membership');
-const RoleChangeLog = require('../models/RoleChangeLog');
+const Role = require('../models/role');
+const User = require('../models/user');
+const ArticleCategory = require('../models/articlecategory');
+const Article = require('../models/article');
+const CommentArticle = require('../models/commentarticle');
+const CommentEdit = require('../models/commentedit');
+const ArticleEdit = require('../models/articleedit');
+const ArticleRating = require('../models/articlerating');
+const FavoriteArticle = require('../models/favoritearticle');
+const Membership = require('../models/membership');
+const RoleChangeLog = require('../models/rolechangelog');
 
-const database = require('./Connection');
+const database = require('./connection');
 
 // 1) Role → User (1‑N)
 Role.hasMany(User, {

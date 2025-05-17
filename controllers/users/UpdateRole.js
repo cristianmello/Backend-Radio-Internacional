@@ -1,6 +1,6 @@
-const User = require('../../models/User');
-const Role = require('../../models/Role');
-const RoleChangeLog = require('../../models/RoleChangeLog'); // Importar el modelo de log
+const User = require('../../models/user');
+const Role = require('../../models/role');
+const RoleChangeLog = require('../../models/rolechangelog'); // Importar el modelo de log
 
 const changeUserRole = async (req, res) => {
     try {

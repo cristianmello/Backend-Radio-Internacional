@@ -1,5 +1,5 @@
 // services/rateLimiter/ForgotPasswordLimiter.js
-const redisClient = require('../../services/RedisClient');
+const redisClient = require('../redisclient');
 const WINDOW_SECONDS = 0 * 60; // 15 minutos
 const MAX_REQUESTS = 3;
 

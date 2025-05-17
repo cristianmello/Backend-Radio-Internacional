@@ -1,8 +1,8 @@
 // controllers/users/forgotPassword.js
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const redisClient = require('../../services/RedisClient');
-const User = require('../../models/User');
+const redisClient = require('../../services/redisclient');
+const User = require('../../models/user');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 

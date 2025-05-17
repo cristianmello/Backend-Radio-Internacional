@@ -1,6 +1,6 @@
-const User = require('../../models/User');
+const User = require('../../models/user');
 const bcrypt = require('bcrypt');
-const redisClient = require('../../services/RedisClient');
+const redisClient = require('../../services/redisclient');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 require('dotenv').config();

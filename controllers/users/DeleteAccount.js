@@ -1,5 +1,5 @@
-const User = require('../../models/User');
-const Role = require('../../models/Role');
+const User = require('../../models/user');
+const Role = require('../../models/role');
 
 // Jerarquía de roles
 const roleHierarchy = {

@@ -1,4 +1,4 @@
-const redisClient = require('../../services/RedisClient');
+const redisClient = require('../../services/redisclient');
 
 const revokeRefreshToken = async (req, res) => {
   const { jti } = req.body;

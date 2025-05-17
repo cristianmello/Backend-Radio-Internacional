@@ -1,5 +1,5 @@
 // services/rateLimiter/LoginLimiter.js
-const redisClient = require('../../services/RedisClient');
+const redisClient = require('../redisclient');
 const RATELIMIT_DURATION = 5 * 60; // segundos
 const MAX_REQUESTS = 5;
 

@@ -1,6 +1,6 @@
 // controllers/users/verifyEmail.js
-const redisClient = require('../../services/RedisClient');
-const User = require('../../models/User');
+const redisClient = require('../../services/redisclient');
+const User = require('../../models/user');
 require('dotenv').config();
 
 const CLIENT_URL = process.env.CLIENT_URL;

@@ -1,8 +1,8 @@
 // controllers/users/refreshToken.js
-const User = require('../../models/User');
+const User = require('../../models/user');
 const jwt = require('jsonwebtoken');
-const { createToken } = require('../../services/Jwt');
-const redisClient = require('../../services/RedisClient');
+const { createToken } = require('../../services/jwt');
+const redisClient = require('../../services/redisclient');
 require('dotenv').config();
 
 const refreshToken = async (req, res) => {

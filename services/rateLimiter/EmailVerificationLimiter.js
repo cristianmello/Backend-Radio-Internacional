@@ -1,5 +1,5 @@
 // services/rateLimiter/EmailVerificationLimiter.js
-const redisClient = require('../RedisClient');
+const redisClient = require('../redisclient');
 const WINDOW_SECONDS = 60 * 60; // 1 hora
 const MAX_REQUESTS = 3;         // máximo 3 envíos por hora
 

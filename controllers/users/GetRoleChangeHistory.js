@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
-const RoleChangeLog = require('../../models/RoleChangeLog');
-const User = require('../../models/User');
-const Role = require('../../models/Role');
+const RoleChangeLog = require('../../models/rolechangelog');
+const User = require('../../models/user');
+const Role = require('../../models/role');
 
 const getRoleChangeHistory = async (req, res) => {
   try {

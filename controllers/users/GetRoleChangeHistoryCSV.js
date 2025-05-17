@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
-const RoleChangeHistory = require('../../models/RoleChangeLog');
-const User = require('../../models/User');
-const Role = require('../../models/Role');
+const RoleChangeHistory = require('../../models/rolechangelog');
+const User = require('../../models/user');
+const Role = require('../../models/role');
 const { Parser } = require('json2csv');
 
 const GetRoleChangeHistoryCSV = async (req, res) => {

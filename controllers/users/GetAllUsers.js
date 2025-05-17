@@ -1,6 +1,6 @@
 const { Op, fn, col, where } = require('sequelize');
-const User = require('../../models/User');
-const Role = require('../../models/Role');
+const User = require('../../models/user');
+const Role = require('../../models/role');
 
 const getAllUsers = async (req, res) => {
     try {

@@ -1,8 +1,8 @@
 // controllers/users/login.js
-const { createToken, createRefreshToken } = require('../../services/Jwt');
-const redisClient = require('../../services/RedisClient');
+const { createToken, createRefreshToken } = require('../../services/jwt');
+const redisClient = require('../../services/redisclient');
 const bcrypt = require('bcrypt');
-const User = require('../../models/User');
+const User = require('../../models/user');
 
 const login = async (req, res) => {
   const { user_mail, user_password } = req.body;

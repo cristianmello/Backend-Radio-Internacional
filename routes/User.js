@@ -39,12 +39,12 @@ const validateChangePassword = require('../middleware/validatechangepassword');
 const validateUserUpdate = require('../middleware/validateuserupdate');
 const updateProfileLimiter = require('../services/rateLimiter/updateprofilelimiter').rateLimiter;
 
-
 // Rutas públicas
 router.post('/register', validateUserRegister, handleValidationErrors, Register);
 router.post('/login', loginLimiter, validateLogin, handleValidationErrors, Login);
 router.post('/refresh-token', RefreshToken);
-router.post('/forgot-password',
+router.post(
+  '/forgot-password',
   forgotPasswordLimiter,
   [check('user_mail').isEmail().withMessage('Debe ser un correo válido')],
   handleValidationErrors,
@@ -57,6 +57,7 @@ router.post(
   handleValidationErrors,
   ResetPassword
 );
+
 // Verificación de email
 router.post(
   '/send-verification-email',
@@ -65,37 +66,34 @@ router.post(
   handleValidationErrors,
   SendVerificationEmail
 );
-// El usuario abre este enlace en el navegador
 router.get('/verify-email', VerifyEmail);
 
-// A partir de aquí, requieren JWT
-router.use(authenticate);
-
-router.get('/profile', GetProfile);
+// Rutas protegidas con JWT
+router.get('/profile', authenticate, GetProfile);
 router.put(
   '/update',
+  authenticate,
   isOwnerOrAdmin(req => req.user.id),
   updateProfileLimiter,
   validateUserUpdate,
   handleValidationErrors,
   UpdateProfile
 );
-
 router.post(
   '/change-password',
+  authenticate,
   validateChangePassword,
   handleValidationErrors,
-  authenticate,
   ChangePassword
 );
-router.post('/logout', Logout);
+router.post('/logout', authenticate, Logout);
 
 // Rutas de admin
-router.delete('/:user_code', authorize('admin', 'superadmin'), DeleteAccount);
-router.post('/revoke-refresh-token', authorize('admin', 'superadmin'), RevokeRefreshToken);
-router.get('/', authorize('superadmin'), GetAllUsers);
-router.put('/role/:user_code', authorize('superadmin'), UpdateRole);
-router.get('/role-history', authorize('superadmin'), GetRoleChangeHistory);
-router.get('/role-history/export', authorize('superadmin'), GetRoleChangeHistoryCSV);
+router.delete('/:user_code', authenticate, authorize('admin', 'superadmin'), DeleteAccount);
+router.post('/revoke-refresh-token', authenticate, authorize('admin', 'superadmin'), RevokeRefreshToken);
+router.get('/', authenticate, authorize('superadmin'), GetAllUsers);
+router.put('/role/:user_code', authenticate, authorize('superadmin'), UpdateRole);
+router.get('/role-history', authenticate, authorize('superadmin'), GetRoleChangeHistory);
+router.get('/role-history/export', authenticate, authorize('superadmin'), GetRoleChangeHistoryCSV);
 
 module.exports = router;

@@ -22,7 +22,7 @@ const {
   UpdateRole,
   GetRoleChangeHistory,
   GetRoleChangeHistoryCSV,
-} = require('../controllers/users/');
+} = require('../controllers/users');
 
 // Middlewares
 const handleValidationErrors = require('../middleware/handlevalidationerrors');

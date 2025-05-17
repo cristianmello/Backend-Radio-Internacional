@@ -1,4 +1,3 @@
-// middleware/errorHandler.js
 'use strict';
 
 const { ValidationError } = require('sequelize');

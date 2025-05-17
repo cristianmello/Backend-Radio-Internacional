@@ -16,7 +16,7 @@ const userRouter = require('./routes/User');
 // ... otros routers
 
 // Middleware de manejo de errores y autenticación
-const errorHandler = require('./middleware/errorHandler');
+const errorHandler = require('./middleware/ErrorHandler');
 
 console.log('API para Radio Internacional');
 

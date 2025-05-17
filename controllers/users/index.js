@@ -1,0 +1,20 @@
+module.exports = {
+  Register: require('./Register'),
+  Login: require('./Login'),
+  RefreshToken: require('./RefreshToken'),
+  GetProfile: require('./GetProfile'),
+  UpdateProfile: require('./UpdateProfile'),
+  VerifyEmail: require('./VerifyEmail'),
+  ChangePassword: require('./ChangePassword'),
+  DeleteAccount: require('./DeleteAccount'),
+  ForgotPassword: require('./ForgotPassword'),
+  Logout: require('./Logout'),
+  ResetPassword: require('./ResetPassword'),
+  RevokeRefreshToken: require('./RevokeRefreshToken'),
+  SendVerificationEmail: require('./SendVerificationEmail'),
+  GetAllUsers: require('./GetAllUsers'),
+  UpdateRole: require('./UpdateRole'),
+  GetRoleChangeHistory: require('./GetRoleChangeHistory'),
+  GetRoleChangeHistoryCSV: require('./GetRoleChangeHistoryCSV'),
+
+};

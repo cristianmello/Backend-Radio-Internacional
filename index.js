@@ -11,7 +11,7 @@ const database = require('./database/connection');
 require('./database/associations');
 
 // Routers
-const userRouter = require('./routes/');
+const userRouter = require('./routes/user')
 // const roleRouter = require('./routes/role');
 // ... otros routers
 

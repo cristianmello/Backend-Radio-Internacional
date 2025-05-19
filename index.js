@@ -23,6 +23,8 @@ console.log('API para Radio Internacional');
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
+
 // 1) Security headers 
 app.use(helmet());
 

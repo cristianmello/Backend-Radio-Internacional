@@ -23,7 +23,7 @@ const GetRoleChangeHistoryCSV = async (req, res) => {
                 { model: User, as: 'user', attributes: ['user_code', 'user_name', 'user_mail'] },
                 { model: Role, as: 'oldRole', attributes: ['role_name'] },
                 { model: Role, as: 'newRole', attributes: ['role_name'] },
-                { model: User, as: 'admin', attributes: ['user_name'] }
+                { model: User, as: 'changer', attributes: ['user_name'] }
             ],
             order: [['changed_at', 'DESC']]
         });
@@ -34,7 +34,7 @@ const GetRoleChangeHistoryCSV = async (req, res) => {
             Usuario: `${change.user.user_name} (${change.user.user_mail})`,
             'Rol anterior': change.oldRole?.role_name || 'N/A',
             'Nuevo rol': change.newRole?.role_name || 'N/A',
-            'Modificado por': change.admin?.user_name || 'N/A',
+            'Modificado por': change.changer?.user_name || 'N/A',  // <- corregido aquí
             'Fecha de cambio': change.changed_at.toISOString()
         }));
 

@@ -4,8 +4,9 @@ const RoleChangeLog = require('../../models/rolechangelog'); // Importar el mode
 
 const changeUserRole = async (req, res) => {
     try {
-        const { user_code, new_role_code } = req.body;
-
+        const user_code = parseInt(req.params.user_code, 10);
+        const { new_role_code } = req.body;
+        
         const changed_by = req.user.id;
 
         if (!user_code || !new_role_code) {

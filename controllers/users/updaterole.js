@@ -6,7 +6,7 @@ const changeUserRole = async (req, res) => {
     try {
         const { user_code, new_role_code } = req.body;
 
-        const changed_by = req.user.user_code;
+        const changed_by = req.user.id;
 
         if (!user_code || !new_role_code) {
             return res.status(400).json({ message: 'Faltan campos obligatorios: user_code o new_role_code' });

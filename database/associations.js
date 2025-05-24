@@ -55,6 +55,10 @@ Article.hasMany(ArticleEdit, {
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
+Article.belongsTo(User, {
+  foreignKey: 'article_author_id',
+  as: 'author'
+});
 ArticleEdit.belongsTo(Article, {
   as: 'article',
   foreignKey: 'edit_article_code'

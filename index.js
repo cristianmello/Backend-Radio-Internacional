@@ -12,8 +12,9 @@ require('./database/associations');
 
 // Routers
 const userRouter = require('./routes/user')
-// const roleRouter = require('./routes/role');
-// ... otros routers
+const articleRouter = require('./routes/article')
+const categoryRouter = require('./routes/articlecategory')
+
 
 // Middleware de manejo de errores y autenticación
 const errorHandler = require('./middleware/errorhandler');
@@ -77,8 +78,9 @@ app.use((req, res, next) => {
 
 // 9) Routes
 app.use('/api/users', userRouter);
-// app.use('/api/roles', roleRouter);
-// ... otros endpoints
+app.use('/api/articles', articleRouter);
+app.use('/api/categories', categoryRouter);
+
 
 // 10) Handle 404
 app.use((req, res) => {

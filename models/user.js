@@ -77,7 +77,7 @@ const User = sequelize.define('User', {
   user_image: {
     type: DataTypes.STRING(255),
     allowNull: false,
-    defaultValue: "default.png"
+    defaultValue: 'https://storage.bunnycdn.com/radiointernacional/profile-images/default.webp'
   },
   user_password: {
     type: DataTypes.STRING(255),

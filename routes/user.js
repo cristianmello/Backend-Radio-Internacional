@@ -22,6 +22,7 @@ const {
   UpdateRole,
   GetRoleChangeHistory,
   GetRoleChangeHistoryCSV,
+  UpdateProfileImage,
 } = require('../controllers/users');
 
 // Middlewares
@@ -38,6 +39,8 @@ const validateResetPassword = require('../middleware/validateresetpassword');
 const validateChangePassword = require('../middleware/validatechangepassword');
 const validateUserUpdate = require('../middleware/validateuserupdate');
 const updateProfileLimiter = require('../services/rateLimiter/updateprofilelimiter').rateLimiter;
+const uploadMemory = require('../middleware/bunny/uploadmemory');
+const transformImage = require('../middleware/bunny/transformimage');
 
 // Rutas públicas
 router.post('/register', validateUserRegister, handleValidationErrors, Register);
@@ -56,6 +59,14 @@ router.post(
   validateResetPassword,
   handleValidationErrors,
   ResetPassword
+);
+
+router.put(
+  '/update-image',
+  authenticate,
+  uploadMemory.single('image'),
+  transformImage,
+  UpdateProfileImage
 );
 
 // Verificación de email

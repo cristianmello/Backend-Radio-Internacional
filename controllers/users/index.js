@@ -16,5 +16,5 @@ module.exports = {
   UpdateRole: require('./updaterole'),
   GetRoleChangeHistory: require('./getrolechangehistory'),
   GetRoleChangeHistoryCSV: require('./getrolechangehistorycsv'),
-
+  UpdateProfileImage: require('./updateprofileimage')
 };

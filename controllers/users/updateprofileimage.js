@@ -4,7 +4,7 @@ const { uploadToBunny, deleteFromBunny } = require('../../services/bunnystorage'
 module.exports = async function updateProfileImage(req, res) {
     console.log('FILE:', req.file);
     try {
-        const userId = req.user.id;
+        const userId = req.user.user_code;
         const file = req.file;
         if (!file) {
             return res.status(400).json({ status: 'error', message: 'No se envió ninguna imagen.' });
@@ -17,9 +17,12 @@ module.exports = async function updateProfileImage(req, res) {
 
         // Subir nueva imagen
         const imageUrl = await uploadToBunny(file.buffer, folder, filename);
+        console.log('[DEBUG] ID recibido:', userId);
 
         // Buscar usuario
         const user = await User.findByPk(userId);
+        console.log('[DEBUG] Usuario encontrado:', user?.user_mail || 'Ninguno');
+
         if (!user) {
             // Si subió bien pero el user no existe, borramos el archivo recién subido
             await deleteFromBunny(imageUrl);
@@ -27,9 +30,10 @@ module.exports = async function updateProfileImage(req, res) {
         }
 
         // Borrar imagen anterior (si no es default)
-        if (user.user_image && !user.user_image.endsWith('default.png') || !user.user_image.endsWith('default.webp')) {
+        if (user.user_image && !(user.user_image.endsWith('default.png') || user.user_image.endsWith('default.webp'))) {
             await deleteFromBunny(user.user_image);
         }
+
 
         // Guardar nueva URL en DB
         user.user_image = imageUrl;

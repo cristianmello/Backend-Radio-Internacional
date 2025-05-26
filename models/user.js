@@ -67,17 +67,20 @@ const User = sequelize.define('User', {
       isEmail: { msg: "Debe ser un correo válido" }
     }
   },
-  validate: {
-    is: {
-      args: /^[\d\s+\-()]+$/i,
-      msg: "Formato de teléfono inválido"
-    },
-    len: {
-      args: [7, 20],
-      msg: "El teléfono debe tener entre 7 y 20 caracteres"
+  user_phone: {  // <-- Aquí agregamos el campo user_phone
+    type: DataTypes.STRING(20),
+    allowNull: true, // Puedes poner false si el campo es obligatorio
+    validate: {
+      is: {
+        args: /^[\d\s+\-()]+$/i,
+        msg: "Formato de teléfono inválido"
+      },
+      len: {
+        args: [7, 20],
+        msg: "El teléfono debe tener entre 7 y 20 caracteres"
+      }
     }
   },
-
   user_image: {
     type: DataTypes.STRING(255),
     allowNull: false,
@@ -130,7 +133,6 @@ const User = sequelize.define('User', {
     { fields: ['role_code'] },
     { fields: ['is_vip'] },
     { fields: ['is_verified'] }
-
   ],
   hooks: {
     beforeCreate: async (user) => {
@@ -146,7 +148,6 @@ const User = sequelize.define('User', {
         }
       }
     }
-
   }
 });
 

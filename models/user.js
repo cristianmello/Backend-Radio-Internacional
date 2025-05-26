@@ -41,7 +41,7 @@ const User = sequelize.define('User', {
   },
   user_birth: {
     type: DataTypes.DATEONLY,
-    allowNull: true,
+    allowNull: false,
     validate: {
       isDate: { msg: "Debe ser una fecha válida" },
       isOldEnough(value) {

@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
-const morgan = require('morgan');
+const logger = require('./utils/logger');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
@@ -37,7 +37,17 @@ app.use(cors({
 }));
 
 // 3) HTTP logger 
-app.use(morgan('combined'));
+
+app.use((req, res, next) => {
+  logger.info({
+    message: 'HTTP Request',
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    requestId: req.id
+  });
+  next();
+});
 
 // 4) Response compression 
 app.use(compression());
@@ -91,12 +101,11 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // Start server & connect DB
+// Start server & connect DB
 (async () => {
   try {
     await database.authenticate();
     console.log('Conexión a la base de datos establecida correctamente.');
-    await database.sync({ force: false });
-    console.log('Modelos sincronizados con la base de datos.');
 
     app.listen(port, () => {
       console.log(`Servidor corriendo en puerto: ${port}`);
@@ -106,3 +115,14 @@ app.use(errorHandler);
     process.exit(1);
   }
 })();
+
+// Captura de errores inesperados fuera de Express
+process.on('unhandledRejection', err => {
+  logger.error({ message: 'UNHANDLED REJECTION 💥', error: err });
+  process.exit(1);
+});
+
+process.on('uncaughtException', err => {
+  logger.error({ message: 'UNCAUGHT EXCEPTION 💥', error: err });
+  process.exit(1);
+});

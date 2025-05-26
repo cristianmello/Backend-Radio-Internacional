@@ -1,46 +1,58 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/connection');
 
-const FavoriteArticle = sequelize.define('FavoriteArticle', {
-  favorite_code: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-    allowNull: false
-  },
-  favorite_user_code: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'user_code'
+const FavoriteArticle = sequelize.define(
+  'FavoriteArticle',
+  {
+    favorite_code: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false
     },
-    onDelete: 'CASCADE'
-  },
-  favorite_article_code: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'articles',
-      key: 'article_code'
+    favorite_user_code: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'user_code'
+      },
+      onDelete: 'CASCADE'
     },
-    onDelete: 'CASCADE'
+    favorite_article_code: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'articles',
+        key: 'article_code'
+      },
+      onDelete: 'CASCADE'
+    },
+    favorite_created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
   },
-  favorite_created_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW
+  {
+    tableName: 'favorite_articles',
+    timestamps: false,
+    indexes: [
+      {
+        name: 'unique_favorite_user_article',
+        unique: true,
+        fields: ['favorite_user_code', 'favorite_article_code']
+      },
+      {
+        name: 'idx_favorite_user_code',
+        fields: ['favorite_user_code']
+      },
+      {
+        name: 'idx_favorite_article_code',
+        fields: ['favorite_article_code']
+      }
+    ]
   }
-}, {
-  timestamps: false,
-  indexes: [
-    {
-      unique: true,
-      fields: ['favorite_user_code', 'favorite_article_code']
-    },
-    { fields: ['favorite_user_code'] },
-    { fields: ['favorite_article_code'] }
-  ]
-});
+);
 
 module.exports = FavoriteArticle;

@@ -58,22 +58,26 @@ const User = sequelize.define('User', {
   user_mail: {
     type: DataTypes.STRING(255),
     allowNull: false,
-    unique: { msg: "Este correo ya está registrado" },
+    unique: {
+      name: 'unique_user_mail',
+      msg: 'Este correo ya está registrado'
+    },
     validate: {
       notNull: { msg: "El correo no puede ser nulo" },
       isEmail: { msg: "Debe ser un correo válido" }
     }
   },
-  user_phone: {
-    type: DataTypes.STRING(20),
-    allowNull: true,
-    validate: {
-      is: {
-        args: /^[\d\s+\-()]+$/i,
-        msg: "Formato de teléfono inválido"
-      }
+  validate: {
+    is: {
+      args: /^[\d\s+\-()]+$/i,
+      msg: "Formato de teléfono inválido"
+    },
+    len: {
+      args: [7, 20],
+      msg: "El teléfono debe tener entre 7 y 20 caracteres"
     }
   },
+
   user_image: {
     type: DataTypes.STRING(255),
     allowNull: false,
@@ -91,7 +95,12 @@ const User = sequelize.define('User', {
       model: 'roles',
       key: 'role_code'
     },
-    onDelete: 'RESTRICT'
+    foreignKey: {
+      name: 'role_code',
+      allowNull: false
+    },
+    onDelete: 'RESTRICT',
+    onUpdate: 'CASCADE'
   },
   is_vip: {
     type: DataTypes.BOOLEAN,
@@ -110,6 +119,12 @@ const User = sequelize.define('User', {
   defaultScope: {
     attributes: { exclude: ['user_password'] }
   },
+  scopes: {
+    withPassword: {
+      attributes: { include: ['user_password'] }
+    }
+  },
+
   indexes: [
     { unique: true, fields: ['user_mail'] },
     { fields: ['role_code'] },
@@ -125,9 +140,13 @@ const User = sequelize.define('User', {
     },
     beforeUpdate: async (user) => {
       if (user.changed('user_password')) {
-        user.user_password = await bcrypt.hash(user.user_password, 10);
+        const rounds = bcrypt.getRounds(user.user_password);
+        if (!rounds) {
+          user.user_password = await bcrypt.hash(user.user_password, 10);
+        }
       }
     }
+
   }
 });
 

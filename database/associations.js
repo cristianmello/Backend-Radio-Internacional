@@ -162,7 +162,7 @@ CommentEdit.belongsTo(User, {
   foreignKey: 'edit_editor_code'
 });
 
-// 8) roleChangeLog → rolechangelog y user → rolechange
+// 9) roleChangeLog → rolechangelog y user → rolechange
 RoleChangeLog.belongsTo(User, {
   as: 'user',
   foreignKey: 'user_code'

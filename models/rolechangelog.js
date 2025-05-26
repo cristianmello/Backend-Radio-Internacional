@@ -9,19 +9,31 @@ const RoleChangeLog = sequelize.define('RoleChangeLog', {
   },
   user_code: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      isInt: { msg: 'El ID del usuario debe ser un número entero' }
+    }
   },
   old_role_code: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      isInt: { msg: 'El código del rol anterior debe ser un número entero' }
+    }
   },
   new_role_code: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      isInt: { msg: 'El código del nuevo rol debe ser un número entero' }
+    }
   },
-  changed_by: { // Código del usuario que hace el cambio (por ejemplo, un admin)
+  changed_by: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      isInt: { msg: 'El ID del modificador debe ser un número entero' }
+    }
   },
   changed_at: {
     type: DataTypes.DATE,
@@ -30,7 +42,12 @@ const RoleChangeLog = sequelize.define('RoleChangeLog', {
   }
 }, {
   tableName: 'role_change_logs',
-  timestamps: false
+  timestamps: false,
+  indexes: [
+    { fields: ['user_code'] },
+    { fields: ['changed_by'] },
+    { fields: ['changed_at'] }
+  ]
 });
 
 module.exports = RoleChangeLog;

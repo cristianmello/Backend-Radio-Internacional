@@ -41,19 +41,19 @@ module.exports = {
     });
 
     // Índices
-    await queryInterface.addIndex('ArticleRatings', {
+    await queryInterface.addIndex('articleratings', {
       unique: true,
       fields: ['rating_user_code', 'rating_article_code']
     });
 
-    await queryInterface.addIndex('ArticleRatings', ['rating_user_code']);
-    await queryInterface.addIndex('ArticleRatings', ['rating_article_code']);
+    await queryInterface.addIndex('articleratings', ['rating_user_code']);
+    await queryInterface.addIndex('articleratings', ['rating_article_code']);
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeIndex('ArticleRatings', ['rating_user_code', 'rating_article_code']);
-    await queryInterface.removeIndex('ArticleRatings', ['rating_user_code']);
-    await queryInterface.removeIndex('ArticleRatings', ['rating_article_code']);
-    await queryInterface.dropTable('ArticleRatings');
+    await queryInterface.removeIndex('articleratings', ['rating_user_code', 'rating_article_code']);
+    await queryInterface.removeIndex('articleratings', ['rating_user_code']);
+    await queryInterface.removeIndex('articleratings', ['rating_article_code']);
+    await queryInterface.dropTable('articleratings');
   }
 };

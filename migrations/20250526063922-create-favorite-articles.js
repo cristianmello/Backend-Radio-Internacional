@@ -37,19 +37,19 @@ module.exports = {
     });
 
     // Índices
-    await queryInterface.addIndex('FavoriteArticles', {
+    await queryInterface.addIndex('favoritearticles', {
       unique: true,
       fields: ['favorite_user_code', 'favorite_article_code']
     });
 
-    await queryInterface.addIndex('FavoriteArticles', ['favorite_user_code']);
-    await queryInterface.addIndex('FavoriteArticles', ['favorite_article_code']);
+    await queryInterface.addIndex('favoritearticles', ['favorite_user_code']);
+    await queryInterface.addIndex('favoritearticles', ['favorite_article_code']);
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeIndex('FavoriteArticles', ['favorite_user_code', 'favorite_article_code']);
-    await queryInterface.removeIndex('FavoriteArticles', ['favorite_user_code']);
-    await queryInterface.removeIndex('FavoriteArticles', ['favorite_article_code']);
-    await queryInterface.dropTable('FavoriteArticles');
+    await queryInterface.removeIndex('favoritearticles', ['favorite_user_code', 'favorite_article_code']);
+    await queryInterface.removeIndex('favoritearticles', ['favorite_user_code']);
+    await queryInterface.removeIndex('favoritearticles', ['favorite_article_code']);
+    await queryInterface.dropTable('favoritearticles');
   }
 };

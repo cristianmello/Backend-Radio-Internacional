@@ -44,13 +44,13 @@ module.exports = {
       }
     });
 
-    await queryInterface.addIndex('ArticleEdits', ['edit_article_code']);
-    await queryInterface.addIndex('ArticleEdits', ['edit_editor_code']);
+    await queryInterface.addIndex('articleEdits', ['edit_article_code']);
+    await queryInterface.addIndex('articleEdits', ['edit_editor_code']);
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeIndex('ArticleEdits', ['edit_article_code']);
-    await queryInterface.removeIndex('ArticleEdits', ['edit_editor_code']);
-    await queryInterface.dropTable('ArticleEdits');
+    await queryInterface.removeIndex('articleEdits', ['edit_article_code']);
+    await queryInterface.removeIndex('articleEdits', ['edit_editor_code']);
+    await queryInterface.dropTable('articleEdits');
   }
 };

@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('FavoriteArticles', {
+    await queryInterface.createTable('favoritearticles', {
       favorite_code: {
         type: Sequelize.INTEGER,
         autoIncrement: true,

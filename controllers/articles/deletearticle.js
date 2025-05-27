@@ -2,12 +2,15 @@ const Article = require('../../models/article');
 
 module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
+    let transactionFinished = false;
+
     try {
         const { id } = req.params;
 
         const article = await Article.findByPk(id);
         if (!article) {
             await t.rollback();
+            transactionFinished = true;
             return res.status(404).json({
                 status: 'error',
                 message: 'Artículo no encontrado.',
@@ -16,6 +19,8 @@ module.exports = async (req, res) => {
 
         await article.destroy({ transaction: t });
         await t.commit();
+        transactionFinished = true;
+
         await redisClient.del(`article:${id}`);
         await redisClient.keys('articles:*').then(keys => keys.forEach(k => redisClient.del(k)));
 
@@ -24,7 +29,9 @@ module.exports = async (req, res) => {
             message: 'Artículo eliminado correctamente.',
         });
     } catch (error) {
-        await t.rollback();
+        if (!transactionFinished) {
+            await t.rollback();
+        }
         console.error('[Articles][Delete]', error);
         res.status(500).json({
             status: 'error',
@@ -32,3 +39,4 @@ module.exports = async (req, res) => {
         });
     }
 };
+

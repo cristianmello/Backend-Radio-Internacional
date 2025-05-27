@@ -101,7 +101,6 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // Start server & connect DB
-// Start server & connect DB
 (async () => {
   try {
     await database.authenticate();

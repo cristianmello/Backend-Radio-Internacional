@@ -1,4 +1,5 @@
 const Article = require('../../models/article');
+const redisClient = require('../../services/redisclient');
 
 module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();

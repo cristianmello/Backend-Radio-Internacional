@@ -58,11 +58,14 @@ module.exports = async (req, res) => {
             article: newArticle
         });
     } catch (error) {
-        await t.rollback();
+        if (!t.finished) {
+            await t.rollback();
+        }
         console.error('[Articles][Create]', error);
         res.status(500).json({
             status: 'error',
             message: 'Error al crear el artículo.',
         });
     }
+
 };

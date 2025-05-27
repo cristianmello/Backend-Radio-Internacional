@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // Asegúrate de que sea el nombre correcto de la tabla
+          model: 'users',
           key: 'user_code'
         },
         onDelete: 'CASCADE',
@@ -23,7 +23,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Articles', // Asegúrate de que sea el nombre correcto de la tabla
+          model: 'articles',
           key: 'article_code'
         },
         onDelete: 'CASCADE',

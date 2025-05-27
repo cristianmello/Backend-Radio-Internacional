@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Articles', // Asegúrate que el nombre coincida con el nombre real de la tabla de artículos
+          model: 'articles',
           key: 'article_code'
         },
         onDelete: 'CASCADE',
@@ -23,7 +23,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // Asegúrate que coincida con el nombre real de la tabla de usuarios
+          model: 'users',
           key: 'user_code'
         },
         onDelete: 'RESTRICT',

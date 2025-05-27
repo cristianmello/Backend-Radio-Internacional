@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'CommentArticles',
+          model: 'commentArticles',
           key: 'comment_id'
         },
         onDelete: 'CASCADE',
@@ -23,7 +23,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users',
+          model: 'users',
           key: 'user_code'
         },
         onDelete: 'RESTRICT',

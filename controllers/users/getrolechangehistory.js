@@ -9,8 +9,8 @@ const getRoleChangeHistory = async (req, res) => {
 
     const where = {};
 
-    if (user_code) where.user_code = user_code;
-    if (changed_by) where.changed_by = changed_by;
+    if (user_code) where.user_code = parseInt(user_code, 10);
+    if (changed_by) where.changed_by = parseInt(changed_by, 10);
 
     if (from || to) {
       where.changed_at = {};
@@ -18,6 +18,8 @@ const getRoleChangeHistory = async (req, res) => {
       if (to) where.changed_at[Op.lte] = new Date(to);
     }
 
+    const parsedLimit = Math.max(parseInt(limit), 1);
+    const parsedPage = Math.max(parseInt(page), 1);
     const offset = (page - 1) * limit;
 
     const logs = await RoleChangeLog.findAndCountAll({
@@ -35,7 +37,7 @@ const getRoleChangeHistory = async (req, res) => {
 
     return res.json({
       total: logs.count,
-      page: parseInt(page),
+      page: parsedPage,
       totalPages: Math.ceil(logs.count / limit),
       logs: logs.rows
     });

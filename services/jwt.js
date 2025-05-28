@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');
-require('dotenv').config();
 
 const {
   ACCESS_TOKEN_SECRET,

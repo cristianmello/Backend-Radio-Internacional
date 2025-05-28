@@ -9,13 +9,12 @@ const handleValidationErrors = require('../middleware/handlevalidationerrors');
 const validateCategoryCreate = require('../middleware/validatecategorycreate');
 const validateCategoryUpdate = require('../middleware/validatecategoryupdate');
 
-// Controllers (cada uno en su archivo bajo controllers/articleCategory/)
 const createCategory = require('../controllers/articlecategories/createcategory');
 const getAllCategories = require('../controllers/articlecategories/getallcategories');
 const getCategoryById = require('../controllers/articlecategories/getcategorybyid');
 const updateCategory = require('../controllers/articlecategories/updatecategory');
 const deleteCategory = require('../controllers/articlecategories/deletecategory');
-
+;
 // Rutas públicas
 router.get('/', getAllCategories);
 router.get('/:id', getCategoryById);

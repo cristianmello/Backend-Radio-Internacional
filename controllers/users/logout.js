@@ -1,7 +1,6 @@
 // controllers/users/logout.js
 const jwt = require('jsonwebtoken');
 const redisClient = require('../../services/redisclient');
-require('dotenv').config();
 
 const logout = async (req, res) => {
   const token = req.cookies.refreshToken;

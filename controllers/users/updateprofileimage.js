@@ -2,7 +2,6 @@ const User = require('../../models/user');
 const { uploadToBunny, deleteFromBunny } = require('../../services/bunnystorage');
 
 module.exports = async function updateProfileImage(req, res) {
-    console.log('FILE:', req.file);
     try {
         const userId = req.user.id;
         const file = req.file;

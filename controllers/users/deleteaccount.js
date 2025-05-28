@@ -27,7 +27,7 @@ const deleteAccount = async (req, res) => {
     if (!userToDelete) {
       return res.status(404).json({ status: 'error', message: 'Usuario no encontrado.' });
     }
-
+    
     const requesterMaxRole = Math.max(...(req.user.roles.map(r => roleHierarchy[r] || 0)));
     const targetRole = userToDelete.role?.role_name;
     const targetMaxRole = roleHierarchy[targetRole] || 0;

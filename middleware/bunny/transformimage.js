@@ -1,10 +1,7 @@
-// middleware/transformImage.js
 const sharp = require('sharp');
 
 /**
- * Recibe req.file y genera un buffer optimizado:
- * - Resize máximo 800×800
- * - Formato WebP con calidad 80
+ * Optimiza la imagen a máximo 800x800 y convierte a WebP (calidad 80)
  */
 async function transformImage(req, res, next) {
   if (!req.file) return next();
@@ -15,13 +12,13 @@ async function transformImage(req, res, next) {
       .webp({ quality: 80 })
       .toBuffer();
 
-    // Reemplazamos el buffer original y cambiamos el mimetype/ext
     req.file.buffer = optimized;
     req.file.mimetype = 'image/webp';
     req.file.originalname = req.file.originalname.replace(/\.\w+$/, '.webp');
     next();
   } catch (err) {
-    next(err);
+    console.error('[TransformImage]', err);
+    return res.status(500).json({ status: 'error', message: 'Error al procesar la imagen.' });
   }
 }
 

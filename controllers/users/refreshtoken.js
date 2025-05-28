@@ -3,7 +3,6 @@ const User = require('../../models/user');
 const jwt = require('jsonwebtoken');
 const { createToken } = require('../../services/jwt');
 const redisClient = require('../../services/redisclient');
-require('dotenv').config();
 
 const refreshToken = async (req, res) => {
   const token = req.cookies.refreshToken || req.body.refresh_token;

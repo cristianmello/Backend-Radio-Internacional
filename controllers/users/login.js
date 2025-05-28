@@ -1,6 +1,5 @@
 // controllers/users/login.js
 const { createToken, createRefreshToken } = require('../../services/jwt');
-const redisClient = require('../../services/redisclient');
 const bcrypt = require('bcrypt');
 const User = require('../../models/user');
 

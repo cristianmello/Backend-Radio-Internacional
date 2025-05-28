@@ -135,6 +135,11 @@ const User = sequelize.define('User', {
     { fields: ['is_verified'] }
   ],
   hooks: {
+    beforeValidate: (user) => {
+      if (user.user_mail) {
+        user.user_mail = user.user_mail.toLowerCase();
+      }
+    },
     beforeCreate: async (user) => {
       if (user.user_password) {
         user.user_password = await bcrypt.hash(user.user_password, 10);

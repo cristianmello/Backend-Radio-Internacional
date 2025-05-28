@@ -1,5 +1,4 @@
 // services/bunnyStorage.js
-require('dotenv').config();
 const { URL } = require('url');
 
 const zone = process.env.BUNNY_STORAGE_ZONE;

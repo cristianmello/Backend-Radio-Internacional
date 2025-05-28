@@ -34,15 +34,18 @@ const GetRoleChangeHistoryCSV = async (req, res) => {
             Usuario: `${change.user.user_name} (${change.user.user_mail})`,
             'Rol anterior': change.oldRole?.role_name || 'N/A',
             'Nuevo rol': change.newRole?.role_name || 'N/A',
-            'Modificado por': change.changer?.user_name || 'N/A',  // <- corregido aquí
-            'Fecha de cambio': change.changed_at.toISOString()
+            'Modificado por': change.changer?.user_name || 'N/A',
+            'Fecha de cambio': change.changed_at.toLocaleString('es-AR')
         }));
 
         const parser = new Parser();
         const csv = parser.parse(mapped);
 
+        const today = new Date().toISOString().split('T')[0];
+        const fileName = `historial-cambios-rol-${today}.csv`;
+
         res.header('Content-Type', 'text/csv');
-        res.attachment('historial-cambios-rol.csv');
+        res.attachment(fileName);
         return res.send(csv);
     } catch (error) {
         console.error('Error al exportar CSV:', error);

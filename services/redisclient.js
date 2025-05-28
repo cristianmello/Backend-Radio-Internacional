@@ -47,7 +47,6 @@ module.exports = redisClient;
 
 // services/RedisClient.js
 const Redis = require('ioredis');
-require('dotenv').config();
 
 const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || '127.0.0.1'}:${process.env.REDIS_PORT || 6379}`;
 

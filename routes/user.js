@@ -41,6 +41,7 @@ const validateUserUpdate = require('../middleware/validateuserupdate');
 const updateProfileLimiter = require('../services/rateLimiter/updateprofilelimiter').rateLimiter;
 const uploadMemory = require('../middleware/bunny/uploadmemory');
 const transformImage = require('../middleware/bunny/transformimage');
+const validateUserIdParam = require('../middleware/validateuseridparam');
 
 // Rutas públicas
 router.post('/register', validateUserRegister, handleValidationErrors, Register);
@@ -100,10 +101,10 @@ router.post(
 router.post('/logout', authenticate, Logout);
 
 // Rutas de admin
-router.delete('/:user_code', authenticate, authorize('admin', 'superadmin'), DeleteAccount);
+router.delete('/:user_code', authenticate, authorize('admin', 'superadmin'), validateUserIdParam, DeleteAccount);
 router.post('/revoke-refresh-token', authenticate, authorize('admin', 'superadmin'), RevokeRefreshToken);
 router.get('/', authenticate, authorize('superadmin'), GetAllUsers);
-router.put('/role/:user_code', authenticate, authorize('superadmin'), UpdateRole);
+router.put('/role/:user_code', authenticate, authorize('superadmin'), validateUserIdParam, UpdateRole);
 router.get('/role-history', authenticate, authorize('superadmin'), GetRoleChangeHistory);
 router.get('/role-history/export', authenticate, authorize('superadmin'), GetRoleChangeHistoryCSV);
 

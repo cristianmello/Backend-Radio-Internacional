@@ -3,7 +3,6 @@ const redisClient = require('../../services/redisclient');
 const nodemailer = require('nodemailer');
 const User = require('../../models/user');
 const crypto = require('crypto');
-require('dotenv').config();
 
 const {
   CLIENT_URL,
@@ -21,37 +20,39 @@ const mailTransporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (req, res) => {
-  const { user_mail } = req.body;
-  const user = await User.findOne({ where: { user_mail } });
-  if (!user) {
-    return res.status(404).json({ status: 'error', message: 'Usuario no encontrado.' });
-  }
+  try {
 
-  // Eliminar tokens previos de este usuario
-  const keys = await redisClient.keys('verify_*');
-  for (let key of keys) {
-    const code = await redisClient.get(key);
-    if (code === user.user_code) {
-      await redisClient.del(key);
+    const { user_mail } = req.body;
+
+    if (!user_mail || typeof user_mail !== 'string') {
+      return res.status(400).json({ status: 'error', message: 'Correo inválido.' });
     }
-  }
 
-  // Generar nuevo token
-  const verifyToken = crypto.randomBytes(32).toString('hex');
-  await redisClient.set(`verify_${verifyToken}`, user.user_code, 'EX', 24 * 60 * 60);
+    const user = await User.findOne({ where: { user_mail } });
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'Usuario no encontrado.' });
+    }
 
-  const link = `${CLIENT_URL}/verify-email?token=${verifyToken}`;
-  await mailTransporter.sendMail({
-    to: user_mail,
-    subject: 'Verifica tu correo',
-    html: `
+    // Generar nuevo token
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    await redisClient.set(`verify_user_${user.user_code}`, verifyToken, 'EX', 24 * 60 * 60);
+
+    const link = `${CLIENT_URL}/verify-email?token=${verifyToken}`;
+    await mailTransporter.sendMail({
+      to: user_mail,
+      subject: 'Verifica tu correo',
+      html: `
       <p>Hola ${user.user_name || ''},</p>
       <p>Para verificar tu cuenta haz clic <a href="${link}">aquí</a>.</p>
       <p>Este enlace expirará en 24 horas.</p>
     `
-  });
+    });
 
-  res.json({ status: 'success', message: 'Email de verificación enviado.' });
+    return res.json({ status: 'success', message: 'Email de verificación enviado.' });
+  } catch (err) {
+    console.error('[User][SendVerificationEmail]', err);
+    return res.status(500).json({ status: 'error', message: 'Error al enviar el correo de verificación.' });
+  }
 };
 
 module.exports = sendVerificationEmail;

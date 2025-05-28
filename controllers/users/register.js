@@ -1,9 +1,7 @@
 const User = require('../../models/user');
-const bcrypt = require('bcrypt');
 const redisClient = require('../../services/redisclient');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-require('dotenv').config();
 
 const CLIENT_URL = process.env.CLIENT_URL;
 
@@ -28,7 +26,6 @@ const register = async (req, res) => {
             user_mail,
             user_phone,
             user_password,
-            // ya no destructuramos role_code
         } = req.body;
 
         const is_vip = false;
@@ -43,7 +40,7 @@ const register = async (req, res) => {
                 user_birth,
                 user_phone,
                 user_password,
-                role_code: fixedRole, // asignado automáticamente
+                role_code: fixedRole,
                 is_vip,
             },
             transaction: t,

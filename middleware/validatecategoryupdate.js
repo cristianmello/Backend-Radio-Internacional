@@ -1,6 +1,11 @@
-const { check } = require('express-validator');
+const { check, param } = require('express-validator');
 
 module.exports = [
+    // Validar el parámetro :id de la URL
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('El ID debe ser un número entero positivo.'),
+
     check('category_name')
         .trim()
         .notEmpty().withMessage('El nombre de la categoría es obligatorio.')

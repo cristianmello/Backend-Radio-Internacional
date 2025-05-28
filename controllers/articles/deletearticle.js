@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
         await article.destroy({ transaction: t });
         await t.commit();
         transactionFinished = true;
-
+ 
         await redisClient.del(`article:${id}`);
         await redisClient.keys('articles:*').then(keys => keys.forEach(k => redisClient.del(k)));
 

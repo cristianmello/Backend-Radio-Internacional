@@ -1,4 +1,3 @@
-// controllers/users/sendVerificationEmail.js
 const redisClient = require('../../services/redisclient');
 const nodemailer = require('nodemailer');
 const User = require('../../models/user');
@@ -21,7 +20,6 @@ const mailTransporter = nodemailer.createTransport({
 
 const sendVerificationEmail = async (req, res) => {
   try {
-
     const { user_mail } = req.body;
 
     if (!user_mail || typeof user_mail !== 'string') {
@@ -33,25 +31,35 @@ const sendVerificationEmail = async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'Usuario no encontrado.' });
     }
 
-    // Generar nuevo token
     const verifyToken = crypto.randomBytes(32).toString('hex');
-    await redisClient.set(`verify_user_${user.user_code}`, verifyToken, 'EX', 24 * 60 * 60);
+    await redisClient.set(`verify_${verifyToken}`, user.user_code, 'EX', 24 * 60 * 60); 
 
     const link = `${CLIENT_URL}/verify-email?token=${verifyToken}`;
     await mailTransporter.sendMail({
       to: user_mail,
       subject: 'Verifica tu correo',
       html: `
-      <p>Hola ${user.user_name || ''},</p>
-      <p>Para verificar tu cuenta haz clic <a href="${link}">aquí</a>.</p>
-      <p>Este enlace expirará en 24 horas.</p>
-    `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+          <h2>📧 Verificación de correo</h2>
+          <p>Hola ${user.user_name || ''},</p>
+          <p>Para verificar tu cuenta haz clic en el siguiente enlace:</p>
+          <p><a href="${link}" style="color: #1a73e8;">Verificar correo</a></p>
+          <p>Este enlace expirará en 24 horas.</p>
+        </div>
+      `
     });
 
-    return res.json({ status: 'success', message: 'Email de verificación enviado.' });
+    return res.json({
+      status: 'success',
+      message: 'Email de verificación enviado.'
+    });
+
   } catch (err) {
     console.error('[User][SendVerificationEmail]', err);
-    return res.status(500).json({ status: 'error', message: 'Error al enviar el correo de verificación.' });
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error al enviar el correo de verificación.'
+    });
   }
 };
 

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const redisClient = require('../../services/redisclient'); // Asegurate de que la ruta sea correcta
+const redisClient = require('../services/redisclient'); // Asegurate de que la ruta sea correcta
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 

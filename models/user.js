@@ -147,8 +147,9 @@ const User = sequelize.define('User', {
     },
     beforeUpdate: async (user) => {
       if (user.changed('user_password')) {
-        const rounds = bcrypt.getRounds(user.user_password);
-        if (!rounds) {
+        // Verificamos si el password es un hash válido con regex
+        const isHashed = /^\$2[aby]\$.{56}$/.test(user.user_password);
+        if (!isHashed) {
           user.user_password = await bcrypt.hash(user.user_password, 10);
         }
       }

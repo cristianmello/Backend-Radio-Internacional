@@ -32,9 +32,10 @@ const resetPassword = async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'Usuario no encontrado.' });
     }
 
-    // Cambiar contraseña (el hook hash se encarga)
-    user.user_password = user_password;
+    const hashedPassword = await bcrypt.hash(user_password, 10);
+    user.user_password = hashedPassword;
     await user.save();
+
 
     // Eliminar tokens de Redis
     await redisClient.del(`reset_token_${token}`);

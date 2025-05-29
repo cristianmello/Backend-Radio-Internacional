@@ -1,4 +1,3 @@
-// controllers/users/forgotPassword.js
 const crypto = require('crypto');
 const redisClient = require('../../services/redisclient');
 const User = require('../../models/user');
@@ -15,46 +14,66 @@ const {
 const mailTransporter = nodemailer.createTransport({
   host: SMTP_HOST,
   port: Number(SMTP_PORT),
-  secure: SMTP_PORT == 465,
+  secure: Number(SMTP_PORT) === 465,
   auth: { user: SMTP_USER, pass: SMTP_PASS }
 });
 
 const forgotPassword = async (req, res) => {
   const { user_mail } = req.body;
-  try {
 
+  try {
     const user = await User.findOne({ where: { user_mail } });
 
-    // Siempre respondemos 200 para no filtrar emails
+    // Se responde éxito para no filtrar emails
     if (!user) {
-      return res.status(200).json({ status: 'success', message: 'Si existe, enviaremos un email.' });
+      return res.status(200).json({
+        status: 'success',
+        message: 'Si existe, enviaremos un email con instrucciones.'
+      });
     }
 
-    // 1) Limpiar tokens de reset previos de este usuario
-    const keys = await redisClient.keys('reset_*');
-    for (let key of keys) {
-      const code = await redisClient.get(key);
-      if (code === user.user_code) {
-        await redisClient.del(key);
-      }
+    const userCode = user.user_code;
+
+    // Limpiar token anterior (si existe)
+    const oldToken = await redisClient.get(`reset_user_${userCode}`);
+    if (oldToken) {
+      await redisClient.del(`reset_token_${oldToken}`);
     }
 
-    // 2) Generar nuevo token y guardarlo
+    // Generar nuevo token seguro
     const resetToken = crypto.randomBytes(32).toString('hex');
-    await redisClient.set(`reset_${resetToken}`, user.user_code, 'EX', 60 * 60); // 1 hora
 
-    // 3) Enviar email
-    const link = `${CLIENT_URL}/reset-password?token=${resetToken}`;
+    // Guardar token en Redis (asociado al user y al token)
+    await redisClient.set(`reset_user_${userCode}`, resetToken, 'EX', 60 * 60); // 1 hora
+    await redisClient.set(`reset_token_${resetToken}`, userCode, 'EX', 60 * 60);
+
+    // Construir el link de recuperación
+    const resetLink = `${CLIENT_URL}/reset-password?token=${resetToken}`;
+
+    // Enviar email
     await mailTransporter.sendMail({
       to: user_mail,
-      subject: 'Restablece tu contraseña',
+      subject: '🔑 Restablece tu contraseña',
       html: `
-      <p>Hola ${user.user_name || ''},</p>
-      <p>Para restablecer tu contraseña haz clic <a href="${link}">aquí</a>. Este enlace expira en 1 hora.</p>
-    `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+      <h2 style="color: #007bff;">Restablece tu contraseña</h2>
+      <p>Hola <b>${user.user_name || ''}</b>,</p>
+      <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para continuar:</p>
+      <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Restablecer contraseña</a>
+      <p>Este enlace expirará en <b>1 hora</b>.</p>
+      <p>Si no solicitaste este cambio, ignora este mensaje.</p>
+      <hr>
+      <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>
+    </div>
+  `
     });
 
-    return res.status(200).json({ status: 'success', message: 'Si existe, enviaremos un email.' });
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Si existe, enviaremos un email con instrucciones.'
+    });
+
   } catch (err) {
     console.error('[forgotPassword]', err);
     return res.status(500).json({

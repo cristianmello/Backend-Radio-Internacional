@@ -1,40 +1,49 @@
-const redisClient = require('../../services/redisclient');
 const { validationResult } = require('express-validator');
+const redisClient = require('../../services/redisclient');
 const User = require('../../models/user');
 
 const resetPassword = async (req, res) => {
-  // 1) Validar errores del body
+  // Validar errores del body
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ status: 'error', errors: errors.array() });
   }
 
-  const { token, newPassword } = req.body;
+  const { user_password } = req.body;
+  const token = req.query.token;
+
+  if (!token) {
+    return res.status(400).json({ status: 'error', message: 'Token no proporcionado.' });
+  }
 
   try {
-    // 2) Validar token en Redis
-    const userCode = await redisClient.get(`reset_${token}`);
+    // Verificar token en Redis
+    const userCode = await redisClient.get(`reset_token_${token}`);
     if (!userCode) {
       return res.status(400).json({ status: 'error', message: 'Token inválido o expirado.' });
     }
 
-    // 3) Buscar usuario
+    // Buscar usuario
     const user = await User.findByPk(userCode);
     if (!user) {
-      await redisClient.del(`reset_${token}`);
+      // Eliminar token para seguridad
+      await redisClient.del(`reset_token_${token}`);
+      await redisClient.del(`reset_user_${userCode}`);
       return res.status(404).json({ status: 'error', message: 'Usuario no encontrado.' });
     }
 
-    // 4) Asignar nueva contraseña (sin hashear, el hook lo hace)
-    user.user_password = newPassword;
+    // Cambiar contraseña (el hook hash se encarga)
+    user.user_password = user_password;
     await user.save();
 
-    // 5) Eliminar token usado
-    await redisClient.del(`reset_${token}`);
+    // Eliminar tokens de Redis
+    await redisClient.del(`reset_token_${token}`);
+    await redisClient.del(`reset_user_${userCode}`);
 
     return res.json({ status: 'success', message: 'Contraseña actualizada correctamente.' });
+
   } catch (err) {
-    console.error('[resetPassword] Error interno:', err);
+    console.error('[resetPassword]', err);
     return res.status(500).json({ status: 'error', message: 'Error del servidor.' });
   }
 };

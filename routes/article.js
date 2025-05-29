@@ -12,8 +12,8 @@ const validateArticleUpdate = require('../middleware/validatearticleupdate');
 const validateGetArticles = require('../middleware/validategetarticles');
 const validateGetArticleById = require('../middleware/validategetarticlebyid');
 
-const uploadArticleImage = require('../middleware/articleImageUpload');
-const sharpArticleImage = require('../middleware/sharpArticleImage');
+const uploadArticleImage = require('../middleware/articles/uploadarticleimages');
+const sharpArticleImage = require('../middleware/articles/sharparticleimage');
 
 // Controllers
 const {

@@ -2,8 +2,7 @@ const Article = require('../../models/article');
 const ArticleCategory = require('../../models/articlecategory');
 const User = require('../../models/user');
 const redisClient = require('../../services/redisclient');
-const uploadImageToBunny = require('../../utils/uploadImageToBunny');
-const deleteImageFromBunny = require('../../utils/deleteImageFromBunny');
+const { uploadToBunny, deleteFromBunny } = require('../../services/bunnystorage');
 const fs = require('fs');
 const path = require('path');
 
@@ -73,21 +72,55 @@ module.exports = async (req, res) => {
 
             // Borrar imagen anterior si no es la default
             if (oldImagePath && !oldImagePath.includes('default.webp')) {
-                await deleteImageFromBunny(oldImagePath);
+                try {
+                    await deleteFromBunny(oldImagePath);
+                } catch (deleteErr) {
+                    console.error('[Articles][Update][DeleteFromBunny]', deleteErr);
+                    // No rollback aquí, solo aviso y sigo
+                }
             }
 
             const localPath = path.join(__dirname, '../../', req.file.path);
-            const uploadedImageUrl = await uploadImageToBunny(localPath);
-            fs.unlinkSync(localPath); // borrar archivo local
-            updatedFields.article_image_url = uploadedImageUrl;
+
+            if (fs.existsSync(localPath)) {
+                try {
+                    const buffer = fs.readFileSync(localPath);
+                    const uploadedImageUrl = await uploadToBunny(buffer, 'articles/', path.basename(localPath));
+                    updatedFields.article_image_url = uploadedImageUrl;
+                } catch (uploadErr) {
+                    console.error('[Articles][Update][UploadToBunny]', uploadErr);
+                    await t.rollback();
+                    return res.status(500).json({
+                        status: 'error',
+                        message: 'Error al subir la imagen.',
+                    });
+                } finally {
+                    // Intento borrar el archivo local en cualquier caso
+                    try {
+                        fs.unlinkSync(localPath);
+                    } catch (unlinkErr) {
+                        console.warn('[Articles][Update][UnlinkLocal]', unlinkErr);
+                    }
+                }
+            } else {
+                console.warn(`[Articles][Update] Archivo local no encontrado: ${localPath}`);
+            }
         }
 
         await article.update(updatedFields, { transaction: t });
 
         await t.commit();
 
-        await redisClient.del(`article:${id}`);
-        await redisClient.keys('articles:*').then(keys => keys.forEach(k => redisClient.del(k)));
+        // Limpieza en Redis en paralelo
+        try {
+            const keys = await redisClient.keys('articles:*');
+            await Promise.all([
+                redisClient.del(`article:${id}`),
+                ...keys.map(k => redisClient.del(k))
+            ]);
+        } catch (redisErr) {
+            console.error('[Articles][Update][RedisCleanup]', redisErr);
+        }
 
         res.status(200).json({
             status: 'success',

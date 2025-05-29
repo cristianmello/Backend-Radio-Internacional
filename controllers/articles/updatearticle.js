@@ -2,6 +2,10 @@ const Article = require('../../models/article');
 const ArticleCategory = require('../../models/articlecategory');
 const User = require('../../models/user');
 const redisClient = require('../../services/redisclient');
+const uploadImageToBunny = require('../../utils/uploadImageToBunny');
+const deleteImageFromBunny = require('../../utils/deleteImageFromBunny');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
@@ -21,7 +25,6 @@ module.exports = async (req, res) => {
             article_title,
             article_slug,
             article_content,
-            article_image_url,
             article_author_id,
             article_category_id,
             article_published_at,
@@ -53,17 +56,33 @@ module.exports = async (req, res) => {
             }
         }
 
-        await article.update({
+        let updatedFields = {
             article_title,
             article_slug,
             article_content,
-            article_image_url,
             article_author_id,
             article_category_id,
             article_published_at,
             article_is_published,
             article_is_premium
-        }, { transaction: t });
+        };
+
+        // Manejo de nueva imagen
+        if (req.file) {
+            const oldImagePath = article.article_image_url;
+
+            // Borrar imagen anterior si no es la default
+            if (oldImagePath && !oldImagePath.includes('default.webp')) {
+                await deleteImageFromBunny(oldImagePath);
+            }
+
+            const localPath = path.join(__dirname, '../../', req.file.path);
+            const uploadedImageUrl = await uploadImageToBunny(localPath);
+            fs.unlinkSync(localPath); // borrar archivo local
+            updatedFields.article_image_url = uploadedImageUrl;
+        }
+
+        await article.update(updatedFields, { transaction: t });
 
         await t.commit();
 
@@ -76,7 +95,7 @@ module.exports = async (req, res) => {
             article
         });
     } catch (error) {
-        await t.rollback();
+        if (!t.finished) await t.rollback();
         console.error('[Articles][Update]', error);
         res.status(500).json({
             status: 'error',

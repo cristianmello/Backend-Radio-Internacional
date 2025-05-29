@@ -2,6 +2,7 @@ const Article = require('../../models/article');
 const ArticleCategory = require('../../models/articlecategory');
 const User = require('../../models/user');
 const redisClient = require('../../services/redisclient');
+const { uploadToBunny } = require('../../services/bunnystorage');
 
 module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
@@ -10,13 +11,14 @@ module.exports = async (req, res) => {
             article_title,
             article_slug,
             article_content,
-            article_image_url,
             article_author_id,
             article_category_id,
             article_published_at,
             article_is_published,
             article_is_premium
         } = req.body;
+
+        const file = req.file;
 
         // Validar que el autor exista
         const authorExists = await User.findByPk(article_author_id);
@@ -36,6 +38,15 @@ module.exports = async (req, res) => {
                 status: 'error',
                 message: 'La categoría especificada no existe.',
             });
+        }
+
+        // Subir imagen si se envió
+        let article_image_url = null;
+        if (file) {
+            const ext = file.originalname.split('.').pop();
+            const filename = `article-${article_slug}-${Date.now()}.${ext}`;
+            const folder = 'article-images/';
+            article_image_url = await uploadToBunny(file.buffer, folder, filename);
         }
 
         const newArticle = await Article.create({

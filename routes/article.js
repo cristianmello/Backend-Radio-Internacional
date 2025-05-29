@@ -12,6 +12,9 @@ const validateArticleUpdate = require('../middleware/validatearticleupdate');
 const validateGetArticles = require('../middleware/validategetarticles');
 const validateGetArticleById = require('../middleware/validategetarticlebyid');
 
+const uploadArticleImage = require('../middleware/articleImageUpload');
+const sharpArticleImage = require('../middleware/sharpArticleImage');
+
 // Controllers
 const {
     GetArticles,
@@ -28,6 +31,8 @@ router.post(
     '/',
     authenticate,
     authorize('editor', 'admin', 'superadmin'),
+    uploadArticleImage,
+    sharpArticleImage,
     validateArticleCreate,
     handleValidationErrors,
     CreateArticle
@@ -37,6 +42,8 @@ router.put(
     '/:id',
     authenticate,
     authorize('editor', 'admin', 'superadmin'),
+    uploadArticleImage,
+    sharpArticleImage,
     validateArticleUpdate,
     handleValidationErrors,
     UpdateArticle

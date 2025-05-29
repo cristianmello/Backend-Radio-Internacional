@@ -1,10 +1,12 @@
-// controllers/users/login.js
 const { createToken, createRefreshToken } = require('../../services/jwt');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const redisClient = require('../../services/redisclient');
 const User = require('../../models/user');
 
 const login = async (req, res) => {
   const { user_mail, user_password } = req.body;
+
   const user = await User.findOne({
     where: { user_mail },
     attributes: ['user_code', 'user_mail', 'user_password', 'role_code', 'is_verified'],
@@ -20,10 +22,20 @@ const login = async (req, res) => {
   const accessToken = createToken(user);
   const refreshToken = createRefreshToken(user);
 
-  // Almacenar jti opcionalmente en whitelist (no obligatorio si sólo usas blacklist)
-  // const { jti } = jwt.decode(refreshToken);
-  // await redisClient.sadd(`rtls_${user.user_code}`, jti);
-  // await redisClient.expire(`rtls_${user.user_code}`, /* segundos de REFRESH_TOKEN_EXPIRES */);
+  // ✅ Extraer y guardar el jti en whitelist de Redis
+  const { jti } = jwt.decode(refreshToken);
+  await redisClient.sadd(`rtls_${user.user_code}`, jti);
+  await redisClient.expire(`rtls_${user.user_code}`, 60 * 60 * 24 * 30); // 30 días
+
+  // ✅ Limitar máximo 5 sesiones activas por usuario
+  const allJtis = await redisClient.smembers(`rtls_${user.user_code}`);
+  if (allJtis.length > 5) {
+    const jtisToRemove = allJtis.slice(0, allJtis.length - 5);
+    for (const oldJti of jtisToRemove) {
+      await redisClient.srem(`rtls_${user.user_code}`, oldJti);
+      await redisClient.set(`bl_rt_${oldJti}`, 'true', 'EX', 60 * 60 * 24 * 30); // Blacklist para prevenir uso futuro
+    }
+  }
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
@@ -32,7 +44,11 @@ const login = async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
   });
 
-  res.status(200).json({ status: 'success', message: 'Inicio de sesión exitoso.', token: accessToken });
+  res.status(200).json({
+    status: 'success',
+    message: 'Inicio de sesión exitoso.',
+    token: accessToken
+  });
 };
 
 module.exports = login;

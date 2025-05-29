@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const redisClient = require('../../services/redisclient');
 const User = require('../../models/user');
+const bcrypt = require('bcrypt');
 
 const resetPassword = async (req, res) => {
   // Validar errores del body

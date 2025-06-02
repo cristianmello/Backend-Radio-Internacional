@@ -45,7 +45,7 @@ const login = async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
   });
   
-  /*
+  
     try {
       await LoginLog.create({
         user_code: user.user_code,
@@ -56,7 +56,6 @@ const login = async (req, res) => {
     } catch (error) {
       console.error('Error guardando log de login:', error);
     }
-      */
 
   res.status(200).json({
     status: 'success',

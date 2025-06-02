@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const redisClient = require('../../services/redisclient');
 const User = require('../../models/user');
 const nodemailer = require('nodemailer');
+const PasswordResetLog = require('../../models/forgotpasswordlog');
 
 const {
   CLIENT_URL,
@@ -33,6 +34,14 @@ const forgotPassword = async (req, res) => {
     }
 
     const userCode = user.user_code;
+
+    // Registrar log de intento de recuperación
+    await PasswordResetLog.create({
+      user_code: userCode,
+      user_mail,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent']
+    });
 
     // Limpiar token anterior (si existe)
     const oldToken = await redisClient.get(`reset_user_${userCode}`);

@@ -21,7 +21,9 @@ const {
     GetArticleByID,
     CreateArticle,
     UpdateArticle,
-    DeleteArticle
+    DeleteArticle,
+    GetArticleHistory,
+    GetArticleHistoryCSV,
 } = require('../controllers/articles');
 
 router.get('/', validateGetArticles, GetArticles);
@@ -55,6 +57,20 @@ router.delete(
     authenticate,
     authorize('editor', 'admin', 'superadmin'),
     DeleteArticle
+);
+
+router.get(
+    '/history',
+    authenticate,
+    authorize('editor', 'admin', 'superadmin'),
+    GetArticleHistory
+);
+
+router.get(
+    '/history/csv',
+    authenticate,
+    authorize('editor', 'admin', 'superadmin'),
+    GetArticleHistoryCSV
 );
 
 module.exports = router;

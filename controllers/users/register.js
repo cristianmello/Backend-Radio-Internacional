@@ -2,6 +2,7 @@ const User = require('../../models/user');
 const redisClient = require('../../services/redisclient');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const RegisterLog = require('../../models/registerlog');
 
 const CLIENT_URL = process.env.CLIENT_URL;
 
@@ -79,6 +80,14 @@ const register = async (req, res) => {
         </div>
       `,
         });
+
+        await RegisterLog.create({
+            user_code: newUser.user_code,
+            user_mail: newUser.user_mail,
+            ip_address: req.ip || null,
+            user_agent: req.get('User-Agent') || null,
+            register_time: new Date(),
+        }, { transaction: t });
 
         await t.commit();
 

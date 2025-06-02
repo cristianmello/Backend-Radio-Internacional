@@ -16,5 +16,16 @@ module.exports = {
   UpdateRole: require('./updaterole'),
   GetRoleChangeHistory: require('./getrolechangehistory'),
   GetRoleChangeHistoryCSV: require('./getrolechangehistorycsv'),
-  UpdateProfileImage: require('./updateprofileimage')
+  UpdateProfileImage: require('./updateprofileimage'),
+  GetProfileChangeHistory: require('./getprofilechangehistory'),
+  GetProfileChangeHistoryCSV: require('./getprofilechangehistorycsv'),
+  GetForgotPasswordHistory: require('./getforgotpasswordhistory'),
+  GetForgotPasswordHistoryCSV: require('./getforgotpasswordhistorycsv'),
+  GetPasswordChangeHistory: require('./getpasswordchangehistory'),
+  GetPasswordChangeHistoryCSV: require('./getforgotpasswordhistory'),
+  GetLoginHistory: require('./getloginhistory'),
+  GetLoginHistoryCSV: require('./getloginhistorycsv'),
+  GetRegisterHistory: require('./getregisterhistory'),
+  GetRegisterHistoryCSV: require('./getregisterhistorycsv')
+
 };

@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const redisClient = require('../../services/redisclient');
 const User = require('../../models/user');
+const LoginLog = require('../../models/loginlog');
 
 const login = async (req, res) => {
   const { user_mail, user_password } = req.body;
@@ -22,12 +23,12 @@ const login = async (req, res) => {
   const accessToken = createToken(user);
   const refreshToken = createRefreshToken(user);
 
-  // ✅ Extraer y guardar el jti en whitelist de Redis
+  // Extraer y guardar el jti en whitelist de Redis
   const { jti } = jwt.decode(refreshToken);
   await redisClient.sadd(`rtls_${user.user_code}`, jti);
   await redisClient.expire(`rtls_${user.user_code}`, 60 * 60 * 24 * 30); // 30 días
 
-  // ✅ Limitar máximo 5 sesiones activas por usuario
+  // Limitar máximo 5 sesiones activas por usuario
   const allJtis = await redisClient.smembers(`rtls_${user.user_code}`);
   if (allJtis.length > 5) {
     const jtisToRemove = allJtis.slice(0, allJtis.length - 5);
@@ -43,6 +44,19 @@ const login = async (req, res) => {
     sameSite: 'strict',
     maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
   });
+  
+  /*
+    try {
+      await LoginLog.create({
+        user_code: user.user_code,
+        user_mail: user.user_mail,
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent')
+      });
+    } catch (error) {
+      console.error('Error guardando log de login:', error);
+    }
+      */
 
   res.status(200).json({
     status: 'success',

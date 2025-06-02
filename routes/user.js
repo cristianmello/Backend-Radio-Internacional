@@ -23,6 +23,16 @@ const {
   GetRoleChangeHistory,
   GetRoleChangeHistoryCSV,
   UpdateProfileImage,
+  GetProfileChangeHistory,
+  GetProfileChangeHistoryCSV,
+  GetForgotPasswordHistory,
+  GetForgotPasswordHistoryCSV,
+  GetPasswordChangeHistory,
+  GetPasswordChangeHistoryCSV,
+  GetLoginHistory,
+  GetLoginHistoryCSV,
+  GetRegisterHistory,
+  GetRegisterHistoryCSV,
 } = require('../controllers/users');
 
 // Middlewares
@@ -107,5 +117,14 @@ router.get('/', authenticate, authorize('superadmin'), GetAllUsers);
 router.put('/role/:user_code', authenticate, authorize('superadmin'), validateUserIdParam, UpdateRole);
 router.get('/role-history', authenticate, authorize('superadmin'), GetRoleChangeHistory);
 router.get('/role-history/export', authenticate, authorize('superadmin'), GetRoleChangeHistoryCSV);
-
+router.get('/profile-history', authenticate, authorize('superadmin'), GetProfileChangeHistory);
+router.get('/profile-history/export', authenticate, authorize('superadmin'), GetProfileChangeHistoryCSV);
+router.get('/forgot-password-history', authenticate, authorize('superadmin'), GetForgotPasswordHistory);
+router.get('/forgot-password-history/export', authenticate, authorize('superadmin'), GetForgotPasswordHistoryCSV);
+router.get('/password-change-history', authenticate, authorize('superadmin'), GetPasswordChangeHistory);
+router.get('/password-change-history/export', authenticate, authorize('superadmin'), GetPasswordChangeHistoryCSV);
+router.get('/login-history', authenticate, authorize('superadmin'), GetLoginHistory);
+router.get('/login-history/export', authenticate, authorize('superadmin'), GetLoginHistoryCSV);
+router.get('/register-history', authenticate, authorize('superadmin'), GetRegisterHistory);
+router.get('/register-history/export', authenticate, authorize('superadmin'), GetRegisterHistoryCSV);
 module.exports = router;

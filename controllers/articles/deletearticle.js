@@ -1,5 +1,6 @@
 const Article = require('../../models/article');
 const redisClient = require('../../services/redisclient');
+const ArticleLog = require('../../models/articlelog'); 
 
 module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
@@ -19,7 +20,22 @@ module.exports = async (req, res) => {
         }
 
         await article.destroy({ transaction: t });
+
+        if (req.user) {
+            await ArticleLog.create({
+                user_id: req.user.user_code,
+                article_id: article.article_code,
+                action: 'delete',
+                details: JSON.stringify({
+                    title: article.article_title,
+                    slug: article.article_slug
+                }),
+                timestamp: new Date()
+            }, { transaction });
+        }
+
         await t.commit();
+        
         transactionFinished = true;
  
         await redisClient.del(`article:${id}`);

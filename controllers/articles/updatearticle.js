@@ -1,6 +1,7 @@
 const Article = require('../../models/article');
 const ArticleCategory = require('../../models/articlecategory');
 const User = require('../../models/user');
+const ArticleLog = require('../../models/articlelog');
 const redisClient = require('../../services/redisclient');
 const { uploadToBunny, deleteFromBunny } = require('../../services/bunnystorage');
 const fs = require('fs');
@@ -109,6 +110,16 @@ module.exports = async (req, res) => {
 
         await article.update(updatedFields, { transaction: t });
 
+        // Guardar log del update
+        await ArticleLog.create({
+            user_id,
+            article_id: id,
+            action: 'update',
+            details: {
+                updated_fields: Object.keys(updatedFields),
+                updated_values: updatedFields
+            }
+        }, { transaction: t });
         await t.commit();
 
         // Limpieza en Redis en paralelo

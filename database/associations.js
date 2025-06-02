@@ -9,6 +9,12 @@ const ArticleRating = require('../models/articlerating');
 const FavoriteArticle = require('../models/favoritearticle');
 const Membership = require('../models/membership');
 const RoleChangeLog = require('../models/rolechangelog');
+const ProfileChangeLog = require('../models/profilechangelog');
+const ForgotPasswordLog = require('../models/forgotpasswordlog');
+const PasswordChangeLog = require('../models/passwordchangelog');
+const LoginLog = require('../models/loginlog');
+const RegisterLog = require('../models/registerlog');
+const ArticleLog = require('../models/articlelog');
 
 const database = require('./connection');
 
@@ -179,5 +185,104 @@ RoleChangeLog.belongsTo(Role, {
   as: 'newRole',
   foreignKey: 'new_role_code'
 });
+
+// 10) User → ProfileChangeLog (como usuario afectado y como editor)
+User.hasMany(ProfileChangeLog, {
+  as: 'profileChanges',
+  foreignKey: 'user_code',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+User.hasMany(ProfileChangeLog, {
+  as: 'profileChangesMade',
+  foreignKey: 'changed_by',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+ProfileChangeLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_code'
+});
+ProfileChangeLog.belongsTo(User, {
+  as: 'editor',
+  foreignKey: 'changed_by'
+});
+
+// 11) ForgotPasswordLog ←→ User (1‑N)
+User.hasMany(ForgotPasswordLog, {
+  as: 'forgotPasswordLogs',
+  foreignKey: 'user_code',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+ForgotPasswordLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_code'
+});
+
+// 12) PasswordChangeLog ←→ User (1‑N)
+User.hasMany(PasswordChangeLog, {
+  as: 'passwordChangeLogs',
+  foreignKey: 'user_code',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+PasswordChangeLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_code'
+});
+
+// 13) User → LoginLog (1‑N)
+User.hasMany(LoginLog, {
+  as: 'loginLogs',
+  foreignKey: 'user_code',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+LoginLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_code'
+});
+
+
+// 14) 1-N: User → RegisterLog
+User.hasMany(RegisterLog, {
+  as: 'registerLogs',
+  foreignKey: 'user_code',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
+RegisterLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_code',
+});
+
+// 15) User → ArticleLog (1-N)
+User.hasMany(ArticleLog, {
+  as: 'articleLogs',
+  foreignKey: 'user_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+ArticleLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id',
+});
+
+// 16) Article → ArticleLog (1-N)
+Article.hasMany(ArticleLog, {
+  as: 'logs',
+  foreignKey: 'article_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+ArticleLog.belongsTo(Article, {
+  as: 'article',
+  foreignKey: 'article_id',
+});
+
+
+
 
 module.exports = database;

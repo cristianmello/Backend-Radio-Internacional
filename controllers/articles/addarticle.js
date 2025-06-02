@@ -3,6 +3,7 @@ const ArticleCategory = require('../../models/articlecategory');
 const User = require('../../models/user');
 const redisClient = require('../../services/redisclient');
 const { uploadToBunny } = require('../../services/bunnystorage');
+const ArticleLog = require('../../models/articlelog'); // Si usas logs
 
 module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
@@ -60,6 +61,19 @@ module.exports = async (req, res) => {
             article_is_published,
             article_is_premium
         }, { transaction: t });
+
+        if (req.user) {
+            await ArticleLog.create({
+                user_id: req.user.user_code,
+                article_id: newArticle.article_code,
+                action: 'create',
+                details: JSON.stringify({
+                    title: newArticle.article_title,
+                    slug: newArticle.article_slug
+                }),
+                timestamp: new Date()
+            }, { transaction });
+        }
 
         await t.commit();
         await redisClient.keys('articles:*').then(keys => keys.forEach(k => redisClient.del(k)));

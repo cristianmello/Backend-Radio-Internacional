@@ -20,25 +20,35 @@ const getRoleChangeHistory = async (req, res) => {
 
     const parsedLimit = Math.max(parseInt(limit), 1);
     const parsedPage = Math.max(parseInt(page), 1);
-    const offset = (page - 1) * limit;
+    const offset = (parsedPage - 1) * parsedLimit;
 
     const logs = await RoleChangeLog.findAndCountAll({
       where,
       include: [
-        { model: User, as: 'user', attributes: ['user_code', 'user_name'] },
-        { model: User, as: 'changer', attributes: ['user_code', 'user_name'] },
+        {
+          model: User,
+          as: 'user',
+          // Se añade 'user_mail' a la consulta
+          attributes: ['user_code', 'user_name', 'user_mail']
+        },
+        {
+          model: User,
+          as: 'changer',
+          // Se añade 'user_mail' a la consulta
+          attributes: ['user_code', 'user_name', 'user_mail']
+        },
         { model: Role, as: 'oldRole', attributes: ['role_name'] },
         { model: Role, as: 'newRole', attributes: ['role_name'] }
       ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit: parsedLimit,
+      offset: offset,
       order: [['changed_at', 'DESC']]
     });
 
     return res.json({
       total: logs.count,
       page: parsedPage,
-      totalPages: Math.ceil(logs.count / limit),
+      totalPages: Math.ceil(logs.count / parsedLimit),
       logs: logs.rows
     });
   } catch (error) {
@@ -47,4 +57,4 @@ const getRoleChangeHistory = async (req, res) => {
   }
 };
 
-module.exports = getRoleChangeHistory
+module.exports = getRoleChangeHistory;

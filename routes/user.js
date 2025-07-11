@@ -19,6 +19,9 @@ const {
   SendVerificationEmail,
   VerifyEmail,
   GetAllUsers,
+  GetUserById,
+  GetAllRoles,
+  GetRoleById,
   UpdateRole,
   GetRoleChangeHistory,
   GetRoleChangeHistoryCSV,
@@ -52,69 +55,17 @@ const updateProfileLimiter = require('../services/rateLimiter/updateprofilelimit
 const uploadMemory = require('../middleware/bunny/uploadmemory');
 const transformImage = require('../middleware/bunny/transformimage');
 const validateUserIdParam = require('../middleware/validateuseridparam');
+const validateRoleIdParam = require('../middleware/validateRoleIdParam');
 
 // Rutas públicas
+router.get('/', authenticate, authorize('superadmin'), GetAllUsers);
 router.post('/register', validateUserRegister, handleValidationErrors, Register);
 router.post('/login', loginLimiter, validateLogin, handleValidationErrors, Login);
 router.post('/refresh-token', RefreshToken);
-router.post(
-  '/forgot-password',
-  forgotPasswordLimiter,
-  [check('user_mail').isEmail().withMessage('Debe ser un correo válido')],
-  handleValidationErrors,
-  ForgotPassword
-);
-router.post(
-  '/reset-password',
-  forgotPasswordLimiter,
-  validateResetPassword,
-  handleValidationErrors,
-  ResetPassword
-);
-
-router.put(
-  '/update-image',
-  authenticate,
-  uploadMemory.single('image'),
-  transformImage,
-  UpdateProfileImage
-);
-
-// Verificación de email
-router.post(
-  '/send-verification-email',
-  emailVerificationLimiter,
-  [check('user_mail').isEmail().withMessage('Debe ser un correo válido')],
-  handleValidationErrors,
-  SendVerificationEmail
-);
-router.get('/verify-email', VerifyEmail);
-
-// Rutas protegidas con JWT
-router.get('/profile', authenticate, GetProfile);
-router.put(
-  '/update',
-  authenticate,
-  isOwnerOrAdmin(req => req.user.id),
-  updateProfileLimiter,
-  validateUserUpdate,
-  handleValidationErrors,
-  UpdateProfile
-);
-router.post(
-  '/change-password',
-  authenticate,
-  validateChangePassword,
-  handleValidationErrors,
-  ChangePassword
-);
-router.post('/logout', authenticate, Logout);
-
-// Rutas de admin
-router.delete('/:user_code', authenticate, authorize('admin', 'superadmin'), validateUserIdParam, DeleteAccount);
+router.post('/forgot-password', forgotPasswordLimiter, [check('user_mail').isEmail().withMessage('Debe ser un correo válido')], handleValidationErrors, ForgotPassword);
+router.post('/reset-password', forgotPasswordLimiter, validateResetPassword, handleValidationErrors, ResetPassword);
+router.get('/roles', authenticate, authorize('admin', 'superadmin'), GetAllRoles);
 router.post('/revoke-refresh-token', authenticate, authorize('admin', 'superadmin'), RevokeRefreshToken);
-router.get('/', authenticate, authorize('superadmin'), GetAllUsers);
-router.put('/role/:user_code', authenticate, authorize('superadmin'), validateUserIdParam, UpdateRole);
 router.get('/role-history', authenticate, authorize('superadmin'), GetRoleChangeHistory);
 router.get('/role-history/export', authenticate, authorize('superadmin'), GetRoleChangeHistoryCSV);
 router.get('/profile-history', authenticate, authorize('superadmin'), GetProfileChangeHistory);
@@ -127,4 +78,23 @@ router.get('/login-history', authenticate, authorize('superadmin'), GetLoginHist
 router.get('/login-history/export', authenticate, authorize('superadmin'), GetLoginHistoryCSV);
 router.get('/register-history', authenticate, authorize('superadmin'), GetRegisterHistory);
 router.get('/register-history/export', authenticate, authorize('superadmin'), GetRegisterHistoryCSV);
+
+router.put('/update-image', authenticate, uploadMemory.single('image'), transformImage, UpdateProfileImage);
+
+// Verificación de email
+router.post('/send-verification-email', emailVerificationLimiter, [check('user_mail').isEmail().withMessage('Debe ser un correo válido')], handleValidationErrors, SendVerificationEmail);
+router.get('/verify-email', VerifyEmail);
+
+// Rutas protegidas con JWT
+router.get('/profile', authenticate, GetProfile);
+router.put('/update', authenticate, isOwnerOrAdmin(req => req.user.id), updateProfileLimiter, validateUserUpdate, handleValidationErrors, UpdateProfile);
+router.post('/change-password', authenticate, validateChangePassword, handleValidationErrors, ChangePassword);
+router.post('/logout', authenticate, Logout);
+
+// Rutas de admin
+router.get('/roles/:role_code', authenticate, authorize('admin', 'superadmin'), validateRoleIdParam, GetRoleById);
+router.get('/:user_code', authenticate, authorize('admin', 'superadmin'), validateUserIdParam, GetUserById);
+router.delete('/:user_code', authenticate, isOwnerOrAdmin(req => parseInt(req.params.user_code, 10)), validateUserIdParam, DeleteAccount);
+router.put('/role/:user_code', authenticate, authorize('superadmin'), validateUserIdParam, UpdateRole);
+
 module.exports = router;

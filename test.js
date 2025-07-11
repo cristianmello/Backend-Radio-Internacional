@@ -14,8 +14,8 @@ redisClient.on('connect', () => {
 const limiter = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: 'test_rate',
-  points: 5,         // máximo 5 intentos
-  duration: 60,      // en 60 segundos
+  points: 5,
+  duration: 60,
 });
 
 (async () => {

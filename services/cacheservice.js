@@ -1,7 +1,7 @@
 // services/cacheService.js
 const redisClient = require('./redisclient');
 
-const DEFAULT_EXPIRATION = 300; // 5 minutos
+const DEFAULT_EXPIRATION = 300;
 
 const getOrSetCache = async (key, fetchCallback, expiration = DEFAULT_EXPIRATION) => {
     const cached = await redisClient.get(key);

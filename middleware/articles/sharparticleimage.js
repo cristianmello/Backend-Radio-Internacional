@@ -5,10 +5,16 @@ module.exports = async (req, res, next) => {
 
     try {
         const filename = `article-${Date.now()}.webp`;
+        // middleware articles/sharparticleimage.js
         const buffer = await sharp(req.file.buffer)
-            .resize(1200, 630)
+            .resize({
+                width: 1200,
+                height: 630,
+                fit: 'inside'
+            })
             .webp({ quality: 80 })
             .toBuffer();
+
 
         req.processedImage = {
             buffer,

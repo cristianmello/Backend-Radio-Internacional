@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const redisClient = require('../services/redisclient'); // Asegurate de que la ruta sea correcta
+const redisClient = require('../services/redisclient');
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
@@ -25,7 +25,7 @@ async function verifyToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
 
-    // Verificar si el token fue revocado (opcional, solo si también revocás access tokens)
+    // Verificar si el token fue revocado
     const isRevoked = await redisClient.get(`bl_at_${decoded.jti}`);
     if (isRevoked === 'true') {
       return res.status(403).json({
@@ -46,9 +46,18 @@ async function verifyToken(req, res, next) {
     next();
   } catch (err) {
     console.error('[verifyToken] Token inválido:', err.message);
+
+    // DEVOLVER 401 si el token expiró, 403 si hay otro problema
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Token expirado',
+      });
+    }
+
     return res.status(403).json({
       status: 'error',
-      message: 'Token inválido o expirado',
+      message: 'Token inválido',
     });
   }
 }

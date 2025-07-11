@@ -41,6 +41,16 @@ const Article = sequelize.define(
         }
       }
     },
+    article_excerpt: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      validate: {
+        len: {
+          args: [0, 500],
+          msg: 'El extracto debe tener como máximo 500 caracteres'
+        }
+      }
+    },
     article_content: {
       type: DataTypes.TEXT,
       allowNull: false,

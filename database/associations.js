@@ -15,6 +15,18 @@ const PasswordChangeLog = require('../models/passwordchangelog');
 const LoginLog = require('../models/loginlog');
 const RegisterLog = require('../models/registerlog');
 const ArticleLog = require('../models/articlelog');
+const Short = require('../models/short');
+const ShortLog = require('../models/shortlog');
+const SectionArticles = require('../models/sectionarticles');
+const SectionArticleMap = require('../models/sectionarticlemap');
+const SectionShortMap = require('../models/sectionshortmap');
+const SectionLog = require('../models/sectionlog');
+const Audio = require('../models/audios');
+const AudioLog = require('../models/audio_log');
+const SectionAudioMap = require('../models/sectionaudiomap');
+const Advertisement = require('../models/advertisement');
+const AdvertisementLog = require('../models/advertisement_log');
+const SectionAdvertisementMap = require('../models/sectionadvertisementmap');
 
 const database = require('./connection');
 
@@ -35,6 +47,12 @@ User.hasMany(Membership, {
   as: 'memberships',
   foreignKey: 'user_code',
   onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+User.hasMany(RoleChangeLog, {
+  as: 'roleChangesMade',
+  foreignKey: 'changed_by',
+  onDelete: 'SET NULL',
   onUpdate: 'CASCADE'
 });
 Membership.belongsTo(User, {
@@ -72,7 +90,7 @@ ArticleEdit.belongsTo(Article, {
 User.hasMany(ArticleEdit, {
   as: 'articleEdits',
   foreignKey: 'edit_editor_code',
-  onDelete: 'RESTRICT',
+  onDelete: 'SET NULL',
   onUpdate: 'CASCADE'
 });
 ArticleEdit.belongsTo(User, {
@@ -160,7 +178,7 @@ CommentEdit.belongsTo(CommentArticle, {
 User.hasMany(CommentEdit, {
   as: 'commentEdits',
   foreignKey: 'edit_editor_code',
-  onDelete: 'RESTRICT',
+  onDelete: 'SET NULL',
   onUpdate: 'CASCADE'
 });
 CommentEdit.belongsTo(User, {
@@ -185,6 +203,7 @@ RoleChangeLog.belongsTo(Role, {
   as: 'newRole',
   foreignKey: 'new_role_code'
 });
+
 
 // 10) User → ProfileChangeLog (como usuario afectado y como editor)
 User.hasMany(ProfileChangeLog, {
@@ -282,7 +301,222 @@ ArticleLog.belongsTo(Article, {
   foreignKey: 'article_id',
 });
 
+// 17) User → Short (1-N, como autor del short)
+User.hasMany(Short, {
+  as: 'shorts',
+  foreignKey: 'short_author_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+Short.belongsTo(User, {
+  as: 'author',
+  foreignKey: 'short_author_id',
+});
 
+// 18) User → ShortLog (1-N)
+User.hasMany(ShortLog, {
+  as: 'shortLogs',
+  foreignKey: 'user_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+ShortLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id',
+});
+
+// 19) Short → ShortLog (1-N)
+Short.hasMany(ShortLog, {
+  as: 'logs',
+  foreignKey: 'short_id',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
+});
+ShortLog.belongsTo(Short, {
+  as: 'short',
+  foreignKey: 'short_id',
+});
+
+
+// 20) ArticleCategory → Short (1-N)
+ArticleCategory.hasMany(Short, {
+  as: 'shorts',
+  foreignKey: 'short_category_id',   // ← aquí coincide con tu modelo
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+Short.belongsTo(ArticleCategory, {
+  as: 'category',
+  foreignKey: 'short_category_id',   // ← y aquí también
+});
+
+// 20) SectionArticles --- SectionArticlesMap (N-N)
+
+SectionArticles.belongsToMany(Article, {
+  through: SectionArticleMap,
+  foreignKey: 'section_code',
+  otherKey: 'article_code',
+  as: 'articles'
+});
+
+Article.belongsToMany(SectionArticles, {
+  through: SectionArticleMap,
+  foreignKey: 'article_code',
+  otherKey: 'section_code',
+  as: 'sections'
+});
+
+// Secciones <-> Shorts (M‑N)
+SectionArticles.belongsToMany(Short, {
+  through: SectionShortMap,
+  foreignKey: 'section_code',
+  otherKey: 'short_code',
+  as: 'shorts'
+});
+Short.belongsToMany(SectionArticles, {
+  through: SectionShortMap,
+  foreignKey: 'short_code',
+  otherKey: 'section_code',
+  as: 'sections'
+});
+
+// ——— SectionLog ←→ User (1‑N)
+User.hasMany(SectionLog, {
+  as: 'sectionLogs',
+  foreignKey: 'user_id',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+SectionLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id'
+});
+
+// ——— SectionArticles ←→ SectionLog (1‑N)
+SectionArticles.hasMany(SectionLog, {
+  as: 'logs',
+  foreignKey: 'section_code',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+SectionLog.belongsTo(SectionArticles, {
+  as: 'section',
+  foreignKey: 'section_code'
+});
+
+// —— Audio ←→ User (1-N, como autor del audio)
+User.hasMany(Audio, {
+  as: 'audios',
+  foreignKey: 'audio_author_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+Audio.belongsTo(User, {
+  as: 'author',
+  foreignKey: 'audio_author_id'
+});
+
+// —— ArticleCategory ←→ Audio (1-N, como categoría del audio)
+ArticleCategory.hasMany(Audio, {
+  as: 'audios',
+  foreignKey: 'audio_category_id',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+Audio.belongsTo(ArticleCategory, {
+  as: 'category',
+  foreignKey: 'audio_category_id'
+});
+
+// ——— AudioLog ←→ User (1-N)
+User.hasMany(AudioLog, {
+  as: 'audioLogs',
+  foreignKey: 'user_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+AudioLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id'
+});
+
+// ——— AudioLog ←→ Audio (1-N)
+Audio.hasMany(AudioLog, {
+  as: 'logs',
+  foreignKey: 'audio_id',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+AudioLog.belongsTo(Audio, {
+  as: 'audio',
+  foreignKey: 'audio_id'
+});
+
+// —— Secciones <-> Audios (M‑N)
+SectionArticles.belongsToMany(Audio, {
+  through: SectionAudioMap,
+  foreignKey: 'section_code',
+  otherKey: 'audio_code',
+  as: 'audios'
+});
+
+Audio.belongsToMany(SectionArticles, {
+  through: SectionAudioMap,
+  foreignKey: 'audio_code',
+  otherKey: 'section_code',
+  as: 'sections'
+});
+
+SectionAudioMap.belongsTo(SectionArticles, {
+  as: 'section',
+  foreignKey: 'section_code'
+});
+SectionAudioMap.belongsTo(Audio, {
+  as: 'audio',
+  foreignKey: 'audio_code'
+});
+
+// ====== SISTEMA DE PUBLICIDAD ======
+
+// 21) Secciones <-> Anuncios (M-N)
+SectionArticles.belongsToMany(Advertisement, {
+  through: SectionAdvertisementMap,
+  foreignKey: 'section_code',
+  otherKey: 'ad_id',
+  as: 'advertisements' // Podrás usar este alias en tus includes
+});
+
+Advertisement.belongsToMany(SectionArticles, {
+  through: SectionAdvertisementMap,
+  foreignKey: 'ad_id',
+  otherKey: 'section_code',
+  as: 'sections'
+});
+
+// 22) AdvertisementLog <-> User (1-N)
+User.hasMany(AdvertisementLog, {
+  as: 'advertisementLogs',
+  foreignKey: 'user_id',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+
+AdvertisementLog.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id'
+});
+
+// 23) AdvertisementLog <-> Advertisement (1-N)
+Advertisement.hasMany(AdvertisementLog, {
+  as: 'logs',
+  foreignKey: 'ad_id',
+  onDelete: 'CASCADE'
+});
+
+AdvertisementLog.belongsTo(Advertisement, {
+  as: 'advertisement',
+  foreignKey: 'ad_id'
+});
 
 
 module.exports = database;

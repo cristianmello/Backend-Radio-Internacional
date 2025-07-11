@@ -15,10 +15,18 @@ const login = async (req, res) => {
   });
 
   if (!user) return res.status(401).json({ status: 'error', message: 'Credenciales inválidas.' });
-  if (!user.is_verified) return res.status(403).json({ status: 'error', message: 'Debes verificar tu correo.' });
 
   const match = await bcrypt.compare(user_password, user.user_password);
   if (!match) return res.status(401).json({ status: 'error', message: 'Credenciales inválidas.' });
+
+  if (!user.is_verified) {
+    // Devolvemos un error específico que el frontend pueda identificar
+    return res.status(403).json({
+      status: 'error',
+      code: 'ACCOUNT_NOT_VERIFIED',
+      message: 'Su cuenta no ha sido verificada.'
+    });
+  }
 
   const accessToken = createToken(user);
   const refreshToken = createRefreshToken(user);
@@ -42,20 +50,21 @@ const login = async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
+    path: '/',
     maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
   });
-  
-  
-    try {
-      await LoginLog.create({
-        user_code: user.user_code,
-        user_mail: user.user_mail,
-        ip_address: req.ip,
-        user_agent: req.get('User-Agent')
-      });
-    } catch (error) {
-      console.error('Error guardando log de login:', error);
-    }
+
+
+  try {
+    await LoginLog.create({
+      user_code: user.user_code,
+      user_mail: user.user_mail,
+      ip_address: req.ip,
+      user_agent: req.get('User-Agent')
+    });
+  } catch (error) {
+    console.error('Error guardando log de login:', error);
+  }
 
   res.status(200).json({
     status: 'success',

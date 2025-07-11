@@ -3,7 +3,17 @@ const ArticleCategory = require('../../models/articlecategory');
 const User = require('../../models/user');
 const redisClient = require('../../services/redisclient');
 const { uploadToBunny } = require('../../services/bunnystorage');
-const ArticleLog = require('../../models/articlelog'); // Si usas logs
+const ArticleLog = require('../../models/articlelog');
+
+async function clearByPattern(pattern) {
+    let cursor = '0';
+    do {
+        const [nextCursor, keys] = await redisClient.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+        if (keys.length) await redisClient.del(...keys);
+        cursor = nextCursor;
+    } while (cursor !== '0');
+}
+
 
 module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
@@ -11,10 +21,10 @@ module.exports = async (req, res) => {
         const {
             article_title,
             article_slug,
+            article_excerpt,
             article_content,
             article_author_id,
             article_category_id,
-            article_published_at,
             article_is_published,
             article_is_premium
         } = req.body;
@@ -41,30 +51,34 @@ module.exports = async (req, res) => {
             });
         }
 
-        // Subir imagen si se envió
+        // Manejar imagen enviada
         let article_image_url = null;
-        if (file) {
-            const ext = file.originalname.split('.').pop();
-            const filename = `article-${article_slug}-${Date.now()}.${ext}`;
-            const folder = 'article-images/';
-            article_image_url = await uploadToBunny(file.buffer, folder, filename);
+        if (req.processedImage) {
+            article_image_url = await uploadToBunny(
+                req.processedImage.buffer,
+                'article-images/',
+                req.processedImage.filename
+            );
         }
+
+        const publishedAt = article_is_published ? new Date() : null;
 
         const newArticle = await Article.create({
             article_title,
             article_slug,
+            article_excerpt,
             article_content,
             article_image_url,
             article_author_id,
             article_category_id,
-            article_published_at,
+            article_published_at: publishedAt,
             article_is_published,
             article_is_premium
         }, { transaction: t });
 
         if (req.user) {
             await ArticleLog.create({
-                user_id: req.user.user_code,
+                user_id: req.user.id,
                 article_id: newArticle.article_code,
                 action: 'create',
                 details: JSON.stringify({
@@ -72,11 +86,14 @@ module.exports = async (req, res) => {
                     slug: newArticle.article_slug
                 }),
                 timestamp: new Date()
-            }, { transaction });
+            }, { transaction: t });
         }
 
         await t.commit();
-        await redisClient.keys('articles:*').then(keys => keys.forEach(k => redisClient.del(k)));
+
+        await clearByPattern('articles:*');
+        await clearByPattern('drafts:*');
+        await clearByPattern('categories:all');
 
         res.status(201).json({
             status: 'success',

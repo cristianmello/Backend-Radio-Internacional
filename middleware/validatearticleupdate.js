@@ -13,6 +13,11 @@ const validateArticleUpdate = [
         .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
         .withMessage('El identificador debe estar en minúsculas y solo puede contener letras, números y guiones (ej: mi-articulo)'),
 
+    check('article_excerpt')
+        .optional({ nullable: true })
+        .isLength({ max: 500 })
+        .withMessage('El extracto debe tener como máximo 500 caracteres'),
+
     check('article_content')
         .optional()
         .notEmpty().withMessage('El contenido del artículo no puede estar vacío')

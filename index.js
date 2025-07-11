@@ -14,7 +14,11 @@ require('./database/associations');
 const userRouter = require('./routes/user')
 const articleRouter = require('./routes/article')
 const categoryRouter = require('./routes/articlecategory')
-
+const shortsRouter = require('./routes/short')
+const audiosRouter = require('./routes/audio')
+const sectionsRouter = require('./routes/sections')
+const advertisementRoutes = require('./routes/advertisement');
+const contactRouter = require('./routes/contact')
 
 // Middleware de manejo de errores y autenticación
 const errorHandler = require('./middleware/errorhandler');
@@ -29,13 +33,39 @@ app.set('trust proxy', 1);
 // 1) Security headers 
 app.use(helmet());
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://192.168.1.14:5173',
+  'http://172.18.96.1:5173',
+  'http://192.168.1.11:5173',
+  'http://192.168.1.13:5173',
+  'http://192.168.1.7:5173',
+  'http://192.168.1.19:5173',
+  'http://192.168.1.6:5173',
+  'http://192.168.1.15:5173',
+
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir solicitudes sin origin (por ejemplo, curl o postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('No permitido por CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+/*
 // 2) CORS (solo desde tu frontend) 
 app.use(cors({
   origin: process.env.CLIENT_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
-
+*/
 // 3) HTTP logger 
 
 app.use((req, res, next) => {
@@ -52,9 +82,17 @@ app.use((req, res, next) => {
 // 4) Response compression 
 app.use(compression());
 
+app.use((req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.startsWith('multipart/form-data')) {
+    return next();
+  }
+  express.json({ limit: '6mb' })(req, res, next);
+});
+
+
 // 5) Body parsers con size limit 
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.urlencoded({ limit: '6mb', extended: true }));
 app.disable('x-powered-by');
 
 // 6) Rate limiter global 
@@ -65,7 +103,7 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: { status: 'error', message: 'Demasiadas solicitudes, inténtalo más tarde.' }
 });
-app.use('/api/', apiLimiter);
+//app.use('/api/', apiLimiter);
 
 // 7) Cookie parser + CSRF
 app.use(cookieParser());
@@ -90,7 +128,11 @@ app.use((req, res, next) => {
 app.use('/api/users', userRouter);
 app.use('/api/articles', articleRouter);
 app.use('/api/categories', categoryRouter);
-
+app.use('/api/shorts', shortsRouter);
+app.use('/api/sections', sectionsRouter);
+app.use('/api/audios', audiosRouter);
+app.use('/api/advertisements', advertisementRoutes);
+app.use('/api/contacts', contactRouter);
 
 // 10) Handle 404
 app.use((req, res) => {
@@ -117,11 +159,11 @@ app.use(errorHandler);
 
 // Captura de errores inesperados fuera de Express
 process.on('unhandledRejection', err => {
-  logger.error({ message: 'UNHANDLED REJECTION 💥', error: err });
+  logger.error({ message: 'UNHANDLED REJECTION', error: err });
   process.exit(1);
 });
 
 process.on('uncaughtException', err => {
-  logger.error({ message: 'UNCAUGHT EXCEPTION 💥', error: err });
+  logger.error({ message: 'UNCAUGHT EXCEPTION', error: err });
   process.exit(1);
 });

@@ -1,6 +1,6 @@
 // services/rateLimiter/ForgotPasswordLimiter.js
 const redisClient = require('../redisclient');
-const WINDOW_SECONDS = 0 * 60; // 15 minutos
+const WINDOW_SECONDS = 60 * 60;
 const MAX_REQUESTS = 3;
 
 module.exports = {
@@ -40,7 +40,7 @@ module.exports = {
         .hincrby(key, 'count', 1)
         .expire(key, WINDOW_SECONDS)
         .exec();
-      
+
       return next();
     } catch (err) {
       console.error('[ForgotPasswordLimiter] Error:', err);

@@ -25,11 +25,12 @@ const validateUserRegister = [
     .isISO8601().withMessage('Debe ser una fecha válida en formato ISO (YYYY-MM-DD)'),
 
   check('user_phone')
-    .optional()
-    .matches(/^[\d\s+\-()]+$/).withMessage('Formato de teléfono inválido'),
+    .optional({ checkFalsy: true })
+    .matches(/^[\d\s+\-()]+$/)
+    .withMessage('Formato de teléfono inválido'),
 
   check('role_code')
-    .notEmpty().withMessage('El rol es obligatorio')
+    .optional()
     .isInt().withMessage('El rol debe ser un número entero'),
 
   check('is_vip')

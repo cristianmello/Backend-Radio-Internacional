@@ -12,12 +12,17 @@ const validateCategoryUpdate = require('../middleware/validatecategoryupdate');
 const createCategory = require('../controllers/articlecategories/createcategory');
 const getAllCategories = require('../controllers/articlecategories/getallcategories');
 const getCategoryById = require('../controllers/articlecategories/getcategorybyid');
+const getSectionArticles = require('../controllers/articlecategories/sectioncontrollers');
 const updateCategory = require('../controllers/articlecategories/updatecategory');
 const deleteCategory = require('../controllers/articlecategories/deletecategory');
 ;
 // Rutas públicas
 router.get('/', getAllCategories);
 router.get('/:id', getCategoryById);
+router.get(
+    '/api/sections/:sectionSlug/articles',
+    getSectionArticles
+);
 
 // Rutas protegidas (solo admin y superadmin)
 router.post(

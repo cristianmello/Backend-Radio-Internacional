@@ -1,3 +1,4 @@
+// src/controllers/categories/deleteCategory.js
 const ArticleCategory = require('../../models/articlecategory');
 const redisClient = require('../../services/redisclient');
 
@@ -6,7 +7,7 @@ module.exports = async (req, res, next) => {
   const t = await ArticleCategory.sequelize.transaction();
 
   try {
-    const category = await ArticleCategory.findByPk(id);
+    const category = await ArticleCategory.findByPk(id, { transaction: t });
     if (!category) {
       await t.rollback();
       return res.status(404).json({
@@ -18,12 +19,13 @@ module.exports = async (req, res, next) => {
     await category.destroy({ transaction: t });
     await t.commit();
 
-    // 🧹 Limpiar caché
+    // Invalida sólo el listado de categorías
     if (redisClient) {
-      await redisClient.del(`category:${id}`);
-      const keys = await redisClient.keys('categories:*');
-      if (keys.length > 0) {
-        await Promise.all(keys.map(k => redisClient.del(k)));
+      try {
+        await redisClient.del(`category:${id}`);
+        await redisClient.del('categories:all');
+      } catch (e) {
+        console.warn('[Redis] No se pudo invalidar categories:all', e);
       }
     }
 

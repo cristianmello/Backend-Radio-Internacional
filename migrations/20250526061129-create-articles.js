@@ -19,6 +19,11 @@ module.exports = {
         unique: true,
         comment: "Este campo se usa como parte de la URL para identificar el artículo"
       },
+      article_excerpt: {
+        type: Sequelize.STRING(500),
+        allowNull: true,
+        comment: 'Breve resumen o extracto del artículo'
+      },
       article_content: {
         type: Sequelize.TEXT,
         allowNull: false

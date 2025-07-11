@@ -1,3 +1,4 @@
+// src/controllers/categories/createCategory.js
 const { validationResult } = require('express-validator');
 const ArticleCategory = require('../../models/articlecategory');
 const redisClient = require('../../services/redisclient');
@@ -13,10 +14,13 @@ module.exports = async (req, res, next) => {
   }
 
   const { category_name, category_slug } = req.body;
-
   const t = await ArticleCategory.sequelize.transaction();
+
   try {
-    const existing = await ArticleCategory.findOne({ where: { category_slug } });
+    const existing = await ArticleCategory.findOne({
+      where: { category_slug },
+      transaction: t
+    });
     if (existing) {
       await t.rollback();
       return res.status(409).json({
@@ -29,14 +33,14 @@ module.exports = async (req, res, next) => {
       { category_name, category_slug },
       { transaction: t }
     );
-
     await t.commit();
 
+    // Invalida sólo el listado de categorías
     if (redisClient) {
-      await redisClient.del(`category:${newCategory.id}`);
-      const keys = await redisClient.keys('categories:*');
-      if (keys.length > 0) {
-        await Promise.all(keys.map((key) => redisClient.del(key)));
+      try {
+        await redisClient.del('categories:all');
+      } catch (e) {
+        console.warn('[Redis] No se pudo invalidar categories:all', e);
       }
     }
 

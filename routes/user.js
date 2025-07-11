@@ -55,7 +55,7 @@ const updateProfileLimiter = require('../services/rateLimiter/updateprofilelimit
 const uploadMemory = require('../middleware/bunny/uploadmemory');
 const transformImage = require('../middleware/bunny/transformimage');
 const validateUserIdParam = require('../middleware/validateuseridparam');
-const validateRoleIdParam = require('../middleware/validateRoleIdParam');
+const validateRoleIdParam = require('../middleware/validateroleidparam');
 
 // Rutas públicas
 router.get('/', authenticate, authorize('superadmin'), GetAllUsers);

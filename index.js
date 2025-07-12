@@ -1,4 +1,7 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -32,7 +35,7 @@ app.set('trust proxy', 1);
 
 // 1) Security headers 
 app.use(helmet());
-
+/*
 const allowedOrigins = [
   'http://localhost:5173',
   'http://192.168.1.14:5173',
@@ -58,14 +61,14 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
-/*
+*/
 // 2) CORS (solo desde tu frontend) 
 app.use(cors({
   origin: process.env.CLIENT_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
-*/
+
 // 3) HTTP logger 
 
 app.use((req, res, next) => {

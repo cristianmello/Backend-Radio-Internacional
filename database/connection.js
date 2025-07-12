@@ -17,8 +17,6 @@ module.exports = database;
 // Reemplaza TODO tu archivo con este código
 
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
-
 let database;
 
 if (process.env.NODE_ENV === 'production') {

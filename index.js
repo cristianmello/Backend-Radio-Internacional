@@ -1,3 +1,8 @@
+console.log('--- VARIABLES DE ENTORNO EN RAILWAY ---');
+console.log('Valor de NODE_ENV:', process.env.NODE_ENV);
+console.log('¿Existe MYSQL_URL?:', !!process.env.MYSQL_URL);
+console.log('¿Existe REDIS_URL?:', !!process.env.REDIS_URL);
+
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }

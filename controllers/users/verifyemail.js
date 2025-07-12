@@ -45,7 +45,12 @@ const verifyEmail = async (req, res) => {
     await user.save();
     await redisClient.del(redisKey);
 
-    return res.redirect(`${CLIENT_URL}/email-verified-success`);
+    // En lugar de redirect:
+    return res.json({
+      status: 'success',
+      message: 'Correo verificado correctamente.',
+    });
+
   } catch (err) {
     console.error('[Auth][VerifyEmail]', err);
     return res.status(500).json({

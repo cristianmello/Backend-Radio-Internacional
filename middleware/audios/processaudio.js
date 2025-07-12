@@ -1,9 +1,9 @@
 // src/middleware/audios/processAudio.js
-const { parseBuffer } = require('music-metadata');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const stream = require('stream');
 const path = require('path');
+
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 module.exports = async (req, res, next) => {
@@ -11,6 +11,8 @@ module.exports = async (req, res, next) => {
 
     let durationSec = null;
     try {
+        const { parseBuffer } = await import('music-metadata');
+
         const meta = await parseBuffer(req.file.buffer, req.file.mimetype, { duration: true });
         durationSec = Math.floor(meta.format.duration);
     } catch (err) {

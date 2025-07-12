@@ -22,10 +22,12 @@ const Redis = require('ioredis');
 
 let redisClient;
 
-// En producción, construye la URL manualmente con las variables correctas
 if (process.env.NODE_ENV === 'production') {
-  const redisUrl = `redis://${process.env.REDISUSER}:${process.env.REDISPASSWORD}@${process.env.REDISHOST}:${process.env.REDISPORT}`;
-  console.log('[DEBUG] Construyendo URL de Redis manualmente.');
+  const redisUrl = process.env.REDIS_PUBLIC_URL;
+  
+  // --- LÍNEA MODIFICADA ---
+  console.log('[DEBUG] Usando URL pública de Redis como último recurso:', redisUrl);
+
   redisClient = new Redis(redisUrl);
 } else {
   // En desarrollo, sigue usando localhost o tu .env

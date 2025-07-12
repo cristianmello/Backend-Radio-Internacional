@@ -25,6 +25,9 @@ let redisClient;
 if (process.env.NODE_ENV === 'production') {
   const redisUrl = process.env.REDIS_PUBLIC_URL;
   
+  // --- LÍNEA MODIFICADA ---
+  console.log('[DEBUG] Usando URL pública de Redis como último recurso:', redisUrl);
+
   redisClient = new Redis(redisUrl);
 } else {
   // En desarrollo, sigue usando localhost o tu .env

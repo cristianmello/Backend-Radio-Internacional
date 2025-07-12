@@ -105,13 +105,13 @@ app.disable('x-powered-by');
 
 // 6) Rate limiter global 
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
+  windowMs: 15 * 60 * 1000, 
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { status: 'error', message: 'Demasiadas solicitudes, inténtalo más tarde.' }
 });
-//app.use('/api/', apiLimiter);
+app.use('/api/', apiLimiter);
 
 // 7) Cookie parser + CSRF
 app.use(cookieParser());

@@ -102,7 +102,7 @@ app.use((req, res, next) => {
 // 5) Body parsers con size limit 
 app.use(express.urlencoded({ limit: '6mb', extended: true }));
 app.disable('x-powered-by');
-
+/*
 // 6) Rate limiter global 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
@@ -112,7 +112,7 @@ const apiLimiter = rateLimit({
   message: { status: 'error', message: 'Demasiadas solicitudes, inténtalo más tarde.' }
 });
 app.use('/api/', apiLimiter);
-
+*/
 // 7) Cookie parser + CSRF
 app.use(cookieParser());
 /*

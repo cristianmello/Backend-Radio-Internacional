@@ -1,5 +1,5 @@
 const { check, body } = require('express-validator');
-const AD_FORMATS = require('../../config/adFormats');
+const AD_FORMATS = require('../../config/adformats');
 
 module.exports = [
     check('ad_name')

@@ -61,6 +61,7 @@ const forgotPassword = async (req, res) => {
 
     // Enviar email
     await mailTransporter.sendMail({
+      from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
       to: user_mail,
       subject: '🔑 Restablece tu contraseña',
       html: `

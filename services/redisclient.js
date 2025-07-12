@@ -18,19 +18,21 @@ redisClient.on('error', err => console.error('[Redis] Error de conexión:', err)
 module.exports = redisClient;
 */
 // services/RedisClient.js
+// services/RedisClient.js
 const Redis = require('ioredis');
-
 let redisClient;
 
 if (process.env.NODE_ENV === 'production') {
-  const redisUrl = process.env.REDIS_PUBLIC_URL;
-  
-  // --- LÍNEA MODIFICADA ---
-  console.log('[DEBUG] Usando URL pública de Redis como último recurso:', redisUrl);
-
-  redisClient = new Redis(redisUrl);
+  // --- MÉTODO CORRECTO Y SIMPLE ---
+  // Conectamos usando el nombre del servicio como host.
+  console.log('[DEBUG] Conectando a Redis por nombre de servicio... ', process.env.REDISPASSWORD);
+  redisClient = new Redis({
+    host: 'redis', // El nombre de tu servicio de Redis
+    port: 6379,    // El puerto estándar de Redis
+    password: process.env.REDISPASSWORD
+  });
 } else {
-  // En desarrollo, sigue usando localhost o tu .env
+  // En desarrollo, usa tu configuración local
   redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 }
 

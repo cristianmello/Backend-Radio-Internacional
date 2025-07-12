@@ -94,6 +94,8 @@ module.exports = async (req, res) => {
         await clearByPattern('articles:*');
         await clearByPattern('drafts:*');
         await clearByPattern('categories:all');
+        await clearByPattern('available_articles:section=*');
+
 
         res.status(201).json({
             status: 'success',

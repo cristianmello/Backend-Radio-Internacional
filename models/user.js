@@ -67,20 +67,26 @@ const User = sequelize.define('User', {
       isEmail: { msg: "Debe ser un correo válido" }
     }
   },
-  user_phone: {  // <-- Aquí agregamos el campo user_phone
+  user_phone: {
     type: DataTypes.STRING(20),
-    allowNull: true, // Puedes poner false si el campo es obligatorio
+    allowNull: true,
     validate: {
-      is: {
-        args: /^[\d\s+\-()]+$/i,
-        msg: "Formato de teléfono inválido"
-      },
-      len: {
-        args: [7, 20],
-        msg: "El teléfono debe tener entre 7 y 20 caracteres"
+      isValidPhone(value) {
+        // Si es nulo o vacío, lo dejamos pasar
+        if (value === null || value === '') return;
+
+        // Ahora aplicamos la regex y la longitud
+        const phoneRegex = /^[\d\s+\-()]+$/;
+        if (!phoneRegex.test(value)) {
+          throw new Error('Formato de teléfono inválido');
+        }
+        if (value.length < 7 || value.length > 20) {
+          throw new Error('El teléfono debe tener entre 7 y 20 caracteres');
+        }
       }
     }
   },
+
   user_image: {
     type: DataTypes.STRING(255),
     allowNull: false,

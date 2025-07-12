@@ -59,7 +59,7 @@ const register = async (req, res) => {
         const verifyToken = crypto.randomBytes(32).toString('hex');
         await redisClient.set(`verify_${verifyToken}`, newUser.user_code, 'EX', 24 * 3600);
 
-        const link = `${CLIENT_URL}/api/users/verify-email?token=${verifyToken}`;
+        const link = `${CLIENT_URL}/verify-email?token=${verifyToken}`;
         await mailTransporter.sendMail({
             from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
             to: newUser.user_mail,

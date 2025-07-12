@@ -1,5 +1,5 @@
 module.exports = {
-    CreateAudio: require('./addAudio'),
+    CreateAudio: require('./addaudio'),
     UpdateAudio: require('./updateaudio'),
     DeleteAudio: require('./deleteaudio'),
     GetAudioByID: require('./getaudiobyid'),

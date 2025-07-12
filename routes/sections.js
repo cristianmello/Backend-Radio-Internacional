@@ -12,7 +12,7 @@ const {
   validateAddItem,
   validateRemoveItem,
   validateReorder
-} = require('../middleware/sections/validateSection');
+} = require('../middleware/sections/validatesection');
 
 // Controllers
 const {

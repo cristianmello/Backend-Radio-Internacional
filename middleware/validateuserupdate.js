@@ -10,8 +10,9 @@ const validateUserUpdate = [
         .isLength({ min: 3 }).withMessage('Mínimo 3 caracteres'),
 
     check('user_phone')
-        .optional()
+        .optional({ checkFalsy: true })
         .matches(/^[\d\s+\-()]+$/).withMessage('Formato inválido'),
+
 
     check('user_birth')
         .optional()

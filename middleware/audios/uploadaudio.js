@@ -27,6 +27,6 @@ const fileFilter = (req, file, cb) => {
 
 module.exports = multer({
     storage,
-    limits: { fileSize: 20 * 1024 * 1024 }, // límite 20MB
+    limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter
 }).single('audio_file');

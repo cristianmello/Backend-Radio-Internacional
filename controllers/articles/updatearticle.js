@@ -56,12 +56,14 @@ module.exports = async (req, res) => {
             for (const publicUrl of oldImages) {
                 if (!newImages.has(publicUrl)) {
                     // 1) Convertimos la URL pública en la ruta interna:
-                    const storagePath = publicUrl.replace(
-                        /^https?:\/\/storage\.bunnycdn\.com\//,
-                        ''
-                    );
+                    const urlParts = publicUrl.split('/');
+                    const pathStartIndex = urlParts.findIndex(part => part === 'article-images');
+                    const storagePath = urlParts.slice(pathStartIndex).join('/');
+
                     console.log(`Borrando ruta en Bunny: ${storagePath}`);
                     // 2) Llamamos con la ruta interna:
+                    console.log('[Bunny DELETE]', { original: publicUrl, storagePath });
+
                     await deleteFromBunny(storagePath)
                         .catch(e => console.error('Error al borrar imagen huérfana:', e));
                 }

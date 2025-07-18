@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
     try {
         const { id } = req.params;
-        const article = await Article.findByPk(id);
+        const article = await Article.findByPk(id, { transaction: t });
         if (!article) {
             await t.rollback();
             return res.status(404).json({ status: 'error', message: 'Artículo no encontrado.' });

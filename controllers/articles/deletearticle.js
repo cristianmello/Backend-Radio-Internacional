@@ -3,6 +3,7 @@ const Article = require('../../models/article');
 const ArticleLog = require('../../models/articlelog');
 const redisClient = require('../../services/redisclient');
 const { deleteFromBunny } = require('../../services/bunnystorage');
+const cheerio = require('cheerio');
 
 /**
  * Borra todas las claves que casen con un patrón usando SCAN + DEL en bloques.
@@ -48,6 +49,25 @@ module.exports = async (req, res) => {
                 }),
                 timestamp: new Date()
             }, { transaction: t });
+        }
+
+        // 2.5) Borrar imágenes embebidas en el contenido
+        if (article.article_content) {
+            const $ = cheerio.load(article.article_content);
+            const imgSrcs = [];
+            $('img').each((i, img) => {
+                const src = $(img).attr('src');
+                if (src && src.includes('bunnycdn.net')) {
+                    imgSrcs.push(src);
+                }
+            });
+            for (const src of imgSrcs) {
+                try {
+                    await deleteFromBunny(src);
+                } catch (err) {
+                    console.error('[Bunny][DeleteEmbeddedImage]', err, src);
+                }
+            }
         }
 
         // 3) Borramos la imagen en Bunny si existe y no es default

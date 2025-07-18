@@ -5,6 +5,8 @@ const ArticleLog = require('../../models/articlelog');
 const redisClient = require('../../services/redisclient');
 const { uploadToBunny, deleteFromBunny } = require('../../services/bunnystorage');
 const cheerio = require('cheerio');
+const { v4: uuidv4 } = require('uuid'); // Para nombres de archivo únicos
+const path = require('path');
 
 // Util: limpia claves con SCAN para no bloquear en producción
 async function clearByPattern(pattern) {
@@ -29,24 +31,19 @@ module.exports = async (req, res) => {
         const oldContent = article.article_content || '';
         const newContent = req.body.article_content;
 
-        // Solo hacemos la comparación si el contenido realmente cambió
-        if (newContent && newContent !== oldContent) {
+        if (newContent) {
             const $old = cheerio.load(oldContent);
             const $new = cheerio.load(newContent);
-
             const oldImages = new Set();
             $old('img').each((i, img) => {
                 const src = $old(img).attr('src');
                 if (src && src.includes('bunnycdn.net')) oldImages.add(src);
             });
-
             const newImages = new Set();
             $new('img').each((i, img) => {
                 const src = $new(img).attr('src');
                 if (src && src.includes('bunnycdn.net')) newImages.add(src);
             });
-
-            // Comparamos los dos sets para encontrar las imágenes que fueron eliminadas
             for (const oldImage of oldImages) {
                 if (!newImages.has(oldImage)) {
                     console.log(`Borrando imagen huérfana de Bunny: ${oldImage}`);

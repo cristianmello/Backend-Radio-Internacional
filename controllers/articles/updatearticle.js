@@ -31,6 +31,12 @@ module.exports = async (req, res) => {
         const oldContent = article.article_content || '';
         const newContent = req.body.article_content;
 
+           console.log('-------------------------------------------');
+        console.log('[BACKEND] Contenido Antiguo (de la DB):', oldContent);
+        console.log('[BACKEND] Contenido Nuevo (recibido del FE):', newContent);
+        console.log('-------------------------------------------');
+
+
         if (newContent) {
             const $old = cheerio.load(oldContent);
             const $new = cheerio.load(newContent);
@@ -44,6 +50,10 @@ module.exports = async (req, res) => {
                 const src = $new(img).attr('src');
                 if (src && src.includes('bunnycdn.net')) newImages.add(src);
             });
+
+              console.log('[BACKEND] URLs Antiguas Extraídas:', oldImages);
+            console.log('[BACKEND] URLs Nuevas Extraídas:', newImages);
+            
             for (const oldImage of oldImages) {
                 if (!newImages.has(oldImage)) {
                     console.log(`Borrando imagen huérfana de Bunny: ${oldImage}`);

@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     const t = await Article.sequelize.transaction();
     try {
         const { id } = req.params;
-        const article = await Article.findByPk(id, { transaction: t });
+        const article = await Article.findByPk(id);
         if (!article) {
             await t.rollback();
             return res.status(404).json({ status: 'error', message: 'Artículo no encontrado.' });
@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
         const oldContent = article.article_content || '';
         const newContent = req.body.article_content;
 
-           console.log('-------------------------------------------');
+        console.log('-------------------------------------------');
         console.log('[BACKEND] Contenido Antiguo (de la DB):', oldContent);
         console.log('[BACKEND] Contenido Nuevo (recibido del FE):', newContent);
         console.log('-------------------------------------------');
@@ -51,9 +51,9 @@ module.exports = async (req, res) => {
                 if (src && src.includes('bunnycdn.net')) newImages.add(src);
             });
 
-              console.log('[BACKEND] URLs Antiguas Extraídas:', oldImages);
+            console.log('[BACKEND] URLs Antiguas Extraídas:', oldImages);
             console.log('[BACKEND] URLs Nuevas Extraídas:', newImages);
-            
+
             for (const oldImage of oldImages) {
                 if (!newImages.has(oldImage)) {
                     console.log(`Borrando imagen huérfana de Bunny: ${oldImage}`);

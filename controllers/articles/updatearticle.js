@@ -5,8 +5,7 @@ const ArticleLog = require('../../models/articlelog');
 const redisClient = require('../../services/redisclient');
 const { uploadToBunny, deleteFromBunny } = require('../../services/bunnystorage');
 const cheerio = require('cheerio');
-const { v4: uuidv4 } = require('uuid'); // Para nombres de archivo únicos
-const path = require('path');
+
 
 // Util: limpia claves con SCAN para no bloquear en producción
 async function clearByPattern(pattern) {
@@ -54,12 +53,20 @@ module.exports = async (req, res) => {
             console.log('[BACKEND] URLs Antiguas Extraídas:', oldImages);
             console.log('[BACKEND] URLs Nuevas Extraídas:', newImages);
 
-            for (const oldImage of oldImages) {
-                if (!newImages.has(oldImage)) {
-                    console.log(`Borrando imagen huérfana de Bunny: ${oldImage}`);
-                    await deleteFromBunny(oldImage).catch(e => console.error('Error al borrar imagen huérfana:', e));
+            for (const publicUrl of oldImages) {
+                if (!newImages.has(publicUrl)) {
+                    // 1) Convertimos la URL pública en la ruta interna:
+                    const storagePath = publicUrl.replace(
+                        /^https?:\/\/storage\.bunnycdn\.com\//,
+                        ''
+                    );
+                    console.log(`Borrando ruta en Bunny: ${storagePath}`);
+                    // 2) Llamamos con la ruta interna:
+                    await deleteFromBunny(storagePath)
+                        .catch(e => console.error('Error al borrar imagen huérfana:', e));
                 }
             }
+
         }
         // Extraer solo campos permitidos
         const {

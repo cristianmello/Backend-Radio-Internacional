@@ -79,14 +79,6 @@ router.put('/:id',
   UpdateArticle
 );
 
-router.put('/:id/content',
-  authenticate,
-  authorize('editor', 'admin', 'superadmin'),
-  validateArticleUpdate,
-  handleValidationErrors,
-  UpdateArticle
-);
-
 // Borrar
 router.delete('/:id',
   authenticate,

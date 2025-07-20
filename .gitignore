@@ -48,7 +48,6 @@ uploads/fonts/
 *.bak
 
 # Archivos generados
-public/sitemap.xml
 
 # Otros
 *.swp

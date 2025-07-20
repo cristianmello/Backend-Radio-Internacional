@@ -1,8 +1,3 @@
-console.log('--- VARIABLES DE ENTORNO EN RAILWAY ---');
-console.log('Valor de NODE_ENV:', process.env.NODE_ENV);
-console.log('¿Existe MYSQL_URL?:', !!process.env.MYSQL_URL);
-console.log('¿Existe REDIS_URL?:', !!process.env.REDIS_URL);
-
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -10,6 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const path = require('path');
 const logger = require('./utils/logger');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
@@ -34,7 +30,10 @@ const errorHandler = require('./middleware/errorhandler');
 console.log('API para Radio Internacional');
 
 const app = express();
+
 const port = process.env.PORT || 3000;
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.set('trust proxy', 1);
 

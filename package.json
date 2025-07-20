@@ -9,7 +9,8 @@
     "migrate": "npx sequelize-cli db:migrate",
     "seed": "npx sequelize-cli db:seed:all",
     "reset": "npx sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
-    "clean-logs": "node scripts/cleanlogs.js"
+    "clean-logs": "node scripts/cleanlogs.js",
+    "generate-sitemap": "node generate-sitemap.cjs"
   },
   "keywords": [],
   "author": "Cristian",
@@ -38,6 +39,7 @@
     "rate-limiter-flexible": "^2.0.0",
     "sequelize": "^6.37.7",
     "sharp": "^0.34.2",
+    "sitemap": "^8.0.0",
     "slugify": "^1.6.6",
     "uuid": "^11.1.0",
     "winston": "^3.17.0"

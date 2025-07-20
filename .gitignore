@@ -35,3 +35,21 @@ uploads/
 uploads/typhogray/
 uploads/typography/
 uploads/fonts/
+
+# Railway
+.railway/
+
+# Cache o dumps
+*.rdb
+*.redis
+*.sql
+*.sqlite*
+*.dump
+*.bak
+
+# Archivos generados
+public/sitemap.xml
+
+# Otros
+*.swp
+*.tmp

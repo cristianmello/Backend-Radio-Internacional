@@ -1,11 +1,6 @@
 User-agent: *
-# Bloquear todo el panel de administración
+# Bloquear el panel de administración para que no aparezca en búsquedas
 Disallow: /admin/
 
-# (Opcional) Bloquear API REST si no quieres que indexen JSON
-Disallow: /api/
-
-Allow: /
-
-# Indicar el sitemap
+# Indicar la ubicación de tu mapa del sitio
 Sitemap: https://realidadnacional.net/sitemap.xml

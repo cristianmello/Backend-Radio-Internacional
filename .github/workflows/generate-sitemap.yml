@@ -8,8 +8,7 @@ on:
     # (En Uruguay, esto sería a las 12:00 AM o medianoche).
     - cron: '0 3 * * *'
   
-  # También permite ejecutarlo manualmente desde la pestaña "Actions" en GitHub,
-  # lo cual es útil para probar.
+  # También permite ejecutarlo manualmente desde la pestaña "Actions" en GitHub
   workflow_dispatch:
 
 jobs:
@@ -18,9 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Este es el único paso que necesitamos
       - name: Trigger Sitemap Regeneration
-        # Usamos 'curl' (una herramienta de línea de comandos) para hacer una petición POST.
-        # -H añade una cabecera. Aquí ponemos nuestra clave secreta.
-        # Los ${{ secrets.NOMBRE }} son los secretos que creaste en GitHub.
-        run: curl -X POST -H "X-Regeneration-Secret: ${{ secrets.SITEMAP_SECRET }}" ${{ secrets.SITEMAP_ENDPOINT_URL }}
+        run: |
+          curl -X POST \
+            -H "X-Regeneration-Secret: ${{ secrets.SITEMAP_SECRET }}" \
+            "${{ secrets.SITEMAP_ENDPOINT_URL }}"

@@ -144,6 +144,8 @@ app.use('/api/advertisements', advertisementRoutes);
 app.use('/api/contacts', contactRouter);
 
 app.post('/api/sitemap/regenerate', (req, res) => {
+  console.log('[Sitemap] Petición recibida desde:', req.ip);
+
   const secret = req.headers['x-regeneration-secret'];
   if (secret !== process.env.SITEMAP_SECRET) {
     return res.status(401).send('Unauthorized');

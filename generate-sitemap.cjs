@@ -19,8 +19,8 @@ async function buildSitemap() {
     [
         { url: '/', lastmod: now },
         { url: '/politica-de-privacidad', lastmod: now },
-        { url: '/about', lastmod: now },
-        { url: '/contact', lastmod: now },
+       // { url: '/about', lastmod: now },
+        //{ url: '/contact', lastmod: now },
     ].forEach(page => sitemap.write(page));
 
     // 3) Rutas de categoría: /categoria/:category
@@ -39,6 +39,7 @@ async function buildSitemap() {
     // 4) Rutas de artículo: /articulos/:code/:slug
     const articles = await Article.findAll({
         attributes: ['article_code', 'article_slug', 'updated_at'],
+        where: { article_is_published: true },
         raw: true
     });
     articles.forEach(art => {

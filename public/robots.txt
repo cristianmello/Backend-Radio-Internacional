@@ -1,6 +1,2 @@
 User-agent: *
-# Bloquear el panel de administración para que no aparezca en búsquedas
-Disallow: /admin/
-
-# Indicar la ubicación de tu mapa del sitio
-Sitemap: https://realidadnacional.net/sitemap.xml
+Allow: /

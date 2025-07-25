@@ -1,8 +1,7 @@
+const { Op } = require('sequelize');
 const { SitemapStream, streamToPromise } = require('sitemap');
 const { createWriteStream } = require('fs');
 const path = require('path');
-
-// —— Ajusta esto a tus modelos Sequelize ——
 const Article = require('./models/article');
 const ArticleCategory = require('./models/articlecategory');
 
@@ -25,15 +24,20 @@ async function buildSitemap() {
     // 3) Rutas de categoría: /categoria/:category
     const categories = await ArticleCategory.findAll({
         attributes: ['category_slug', 'updated_at'],
+        where: {
+            // Le decimos que busque todas las categorías cuyo slug NO SEA 'inicio'
+            category_slug: {
+                [Op.ne]: 'inicio'
+            }
+        },
         raw: true
     });
     categories.forEach(cat => {
         sitemap.write({
             url: `/categoria/${cat.category_slug}`,
-            lastmod: new Date(cat.updated_at).toISOString(),   // usa cat.updated_at
+            lastmod: new Date(cat.updated_at).toISOString(),
         });
     });
-
 
     // 4) Rutas de artículo: /articulos/:code/:slug
     const articles = await Article.findAll({
@@ -50,7 +54,6 @@ async function buildSitemap() {
 
 
     // 5) Cierra y guarda
-    // Después
     sitemap.end();
     await streamToPromise(sitemap);
 

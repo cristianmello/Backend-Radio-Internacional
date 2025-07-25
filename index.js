@@ -11,18 +11,20 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
+const { buildSitemap } = require('./generate-sitemap.cjs');
+
 const database = require('./database/connection');
 require('./database/associations');
 
 // Routers
-const userRouter = require('./routes/user')
-const articleRouter = require('./routes/article')
-const categoryRouter = require('./routes/articlecategory')
-const shortsRouter = require('./routes/short')
-const audiosRouter = require('./routes/audio')
-const sectionsRouter = require('./routes/sections')
+const userRouter = require('./routes/user');
+const articleRouter = require('./routes/article');
+const categoryRouter = require('./routes/articlecategory');
+const shortsRouter = require('./routes/short');
+const audiosRouter = require('./routes/audio');
+const sectionsRouter = require('./routes/sections');
 const advertisementRoutes = require('./routes/advertisement');
-const contactRouter = require('./routes/contact')
+const contactRouter = require('./routes/contact');
 
 // Middleware de manejo de errores y autenticación
 const errorHandler = require('./middleware/errorhandler');
@@ -140,6 +142,15 @@ app.use('/api/sections', sectionsRouter);
 app.use('/api/audios', audiosRouter);
 app.use('/api/advertisements', advertisementRoutes);
 app.use('/api/contacts', contactRouter);
+
+app.post('/api/sitemap/regenerate', (req, res) => {
+  const secret = req.headers['x-regeneration-secret'];
+  if (secret !== process.env.SITEMAP_SECRET) {
+    return res.status(401).send('Unauthorized');
+  }
+  buildSitemap().catch(err => console.error("Error en la generación del sitemap:", err));
+  res.status(202).send('Proceso de regeneración del sitemap iniciado.');
+});
 
 // 10) Handle 404
 app.use((req, res) => {

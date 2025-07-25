@@ -60,7 +60,5 @@ async function buildSitemap() {
     console.log('✅ sitemap.xml generado en public/');
 }
 
-buildSitemap().catch(err => {
-    console.error(err);
-    process.exit(1);
-});
+module.exports = { buildSitemap };
+

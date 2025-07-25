@@ -143,16 +143,31 @@ app.use('/api/audios', audiosRouter);
 app.use('/api/advertisements', advertisementRoutes);
 app.use('/api/contacts', contactRouter);
 
-app.post('/api/sitemap/regenerate', (req, res) => {
-  console.log('[Sitemap] Petición recibida desde:', req.ip);
+app.post('/api/sitemap/regenerate', async (req, res) => {
+  console.log('=== /api/sitemap/regenerate called ===');
+  console.log('Headers:', req.headers);
+  console.log('req.ip:', req.ip);
 
   const secret = req.headers['x-regeneration-secret'];
   if (secret !== process.env.SITEMAP_SECRET) {
+    console.warn('[Sitemap] Unauthorized attempt with secret:', secret);
     return res.status(401).send('Unauthorized');
   }
-  buildSitemap().catch(err => console.error("Error en la generación del sitemap:", err));
-  res.status(202).send('Proceso de regeneración del sitemap iniciado.');
+
+  try {
+    await buildSitemap();
+    console.log('✅ Sitemap regenerado con éxito');
+    return res
+      .status(202)
+      .send('Proceso de regeneración del sitemap iniciado.');
+  } catch (err) {
+    console.error('[Sitemap] Error al generar sitemap:', err);
+    return res
+      .status(500)
+      .json({ status: 'error', message: 'Error interno del servidor', requestId: req.id });
+  }
 });
+
 
 // 10) Handle 404
 app.use((req, res) => {

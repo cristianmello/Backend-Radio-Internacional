@@ -14,7 +14,7 @@ async function clearCacheByPattern(pattern) {
       cursor = nextCursor;
     } while (cursor !== '0');
   } catch (e) {
-    console.warn(`[Cache] Error limpiando el patrón "${pattern}":`, e);
+    console.warn(`git[Cache] Error limpiando el patrón "${pattern}":`, e);
   }
 }
 
@@ -51,13 +51,12 @@ module.exports = async (req, res, next) => {
     await t.commit();
 
     // Invalida sólo el listado de categorías
-    if (redisClient) {
-      try {
-        await redisClient.del('categories:all');
-      } catch (e) {
-        console.warn('[Redis] No se pudo invalidar categories:all', e);
-      }
-    }
+    await Promise.all([
+      clearCacheByPattern('categories:all'),
+      clearCacheByPattern(`category:${id}`),
+      clearCacheByPattern('pages:home'),
+      clearCacheByPattern('available_articles:*')
+    ]);
 
     return res.status(201).json({
       status: 'success',

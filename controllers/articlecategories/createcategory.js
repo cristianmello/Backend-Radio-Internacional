@@ -14,7 +14,7 @@ async function clearCacheByPattern(pattern) {
       cursor = nextCursor;
     } while (cursor !== '0');
   } catch (e) {
-    console.warn(`git[Cache] Error limpiando el patrón "${pattern}":`, e);
+    console.warn(`[Cache] Error limpiando el patrón "${pattern}":`, e);
   }
 }
 
@@ -55,7 +55,13 @@ module.exports = async (req, res, next) => {
       clearCacheByPattern('categories:all'),
       clearCacheByPattern(`category:${id}`),
       clearCacheByPattern('pages:home'),
-      clearCacheByPattern('available_articles:*')
+      clearCacheByPattern('available_articles:*'),
+      clearCacheByPattern('sections:*'),
+      clearCacheByPattern('pages:*'),
+      clearCacheByPattern('drafts:*'),
+      clearCacheByPattern('shorts:drafts:*'),
+      clearCacheByPattern('audios:*'),
+      clearCacheByPattern('advertisements:*')
     ]);
 
     return res.status(201).json({

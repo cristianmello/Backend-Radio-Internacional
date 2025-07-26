@@ -38,7 +38,13 @@ module.exports = async (req, res, next) => {
       clearCacheByPattern('categories:all'),
       clearCacheByPattern(`category:${id}`),
       clearCacheByPattern('pages:home'),
-      clearCacheByPattern('available_articles:*')
+      clearCacheByPattern('available_articles:*'),
+      clearCacheByPattern('sections:*'),
+      clearCacheByPattern('pages:*'),
+      clearCacheByPattern('drafts:*'),
+      clearCacheByPattern('shorts:drafts:*'),
+      clearCacheByPattern('audios:*'),
+      clearCacheByPattern('advertisements:*')
     ]);
 
     return res.status(200).json({

@@ -14,6 +14,8 @@ const { v4: uuidv4 } = require('uuid');
 const { buildSitemap } = require('./generate-sitemap.cjs');
 
 const database = require('./database/connection');
+const getHomePageData = require('./controllers/pages/gethomepage');
+
 require('./database/associations');
 
 // Routers
@@ -41,33 +43,7 @@ app.set('trust proxy', 1);
 
 // 1) Security headers 
 app.use(helmet());
-/*
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://192.168.1.14:5173',
-  'http://172.18.96.1:5173',
-  'http://192.168.1.11:5173',
-  'http://192.168.1.13:5173',
-  'http://192.168.1.7:5173',
-  'http://192.168.1.19:5173',
-  'http://192.168.1.6:5173',
-  'http://192.168.1.15:5173',
 
-];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    // Permitir solicitudes sin origin (por ejemplo, curl o postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('No permitido por CORS'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-*/
 // 2) CORS (solo desde tu frontend) 
 app.use(cors({
   origin: process.env.CLIENT_URL,
@@ -103,28 +79,9 @@ app.use((req, res, next) => {
 // 5) Body parsers con size limit 
 app.use(express.urlencoded({ limit: '6mb', extended: true }));
 app.disable('x-powered-by');
-/*
-// 6) Rate limiter global 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { status: 'error', message: 'Demasiadas solicitudes, inténtalo más tarde.' }
-});
-app.use('/api/', apiLimiter);
-*/
+
 // 7) Cookie parser + CSRF
 app.use(cookieParser());
-/*
-app.use(csrf({ cookie: { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' } }));
-app.use((req, res, next) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken(), {
-    secure: process.env.NODE_ENV === 'production', sameSite: 'strict'
-  });
-  next();
-});
-*/
 
 // 8) Request ID for logs
 app.use((req, res, next) => {
@@ -142,6 +99,8 @@ app.use('/api/sections', sectionsRouter);
 app.use('/api/audios', audiosRouter);
 app.use('/api/advertisements', advertisementRoutes);
 app.use('/api/contacts', contactRouter);
+
+app.get('/api/pages/home', getHomePageData);
 
 app.post('/api/sitemap/regenerate', async (req, res) => {
   console.log('=== /api/sitemap/regenerate called ===');

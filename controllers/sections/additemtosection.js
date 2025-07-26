@@ -400,10 +400,14 @@ module.exports = async (req, res) => {
         // 7. Commit
         await t.commit();
 
-        // 8. Invalidar orden y lista de items de la sección
-        await clearByPattern(`sections:${slug}:items`);
 
-        // 9. Invalidar paginados de artículos de esta sección
+        await clearByPattern('sections:*');
+        await clearByPattern('pages:*');
+        await clearByPattern('drafts:*');
+        await clearByPattern('shorts:drafts:*');
+        await clearByPattern('audios:*');
+        await clearByPattern('advertisements:*');
+        await clearByPattern(`sections:${slug}:items`);
         await clearByPattern(`available_articles:section=${slug}:*`);
 
         // 8. Invalida caché (no crítico)

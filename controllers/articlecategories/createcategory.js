@@ -3,6 +3,21 @@ const { validationResult } = require('express-validator');
 const ArticleCategory = require('../../models/articlecategory');
 const redisClient = require('../../services/redisclient');
 
+async function clearCacheByPattern(pattern) {
+  try {
+    let cursor = '0';
+    do {
+      const [nextCursor, keys] = await redisClient.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+      if (keys.length) {
+        await redisClient.del(...keys);
+      }
+      cursor = nextCursor;
+    } while (cursor !== '0');
+  } catch (e) {
+    console.warn(`[Cache] Error limpiando el patrón "${pattern}":`, e);
+  }
+}
+
 module.exports = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

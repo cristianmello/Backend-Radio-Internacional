@@ -123,8 +123,9 @@ module.exports = async (req, res) => {
         // 5) Commit
         await t.commit();
 
+        await clearByPattern(`sections:*`);
+        await clearByPattern(`pages:*`);
         await clearByPattern(`sections:${slug}:items`);
-
         await clearByPattern(`available_articles:section=${slug}:*`);
 
         // 7) Responder

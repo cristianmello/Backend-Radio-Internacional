@@ -95,6 +95,7 @@ module.exports = async (req, res) => {
         // Usamos una función helper para que el código sea más limpio y seguro.
         await Promise.all([
             clearCacheByPattern('sections:*'),
+            clearCacheByPattern('pages:*'),
             clearCacheByPattern('drafts:*'),
             clearCacheByPattern('shorts:drafts:*'),
             clearCacheByPattern('audios:*'),

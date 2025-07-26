@@ -2,6 +2,20 @@
 const ArticleCategory = require('../../models/articlecategory');
 const redisClient = require('../../services/redisclient');
 
+async function clearCacheByPattern(pattern) {
+  try {
+    let cursor = '0';
+    do {
+      const [nextCursor, keys] = await redisClient.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+      if (keys.length) {
+        await redisClient.del(...keys);
+      }
+      cursor = nextCursor;
+    } while (cursor !== '0');
+  } catch (e) {
+    console.warn(`[Cache] Error limpiando el patrón "${pattern}":`, e);
+  }
+}
 module.exports = async (req, res, next) => {
   const { id } = req.params;
   const t = await ArticleCategory.sequelize.transaction();
@@ -20,14 +34,12 @@ module.exports = async (req, res, next) => {
     await t.commit();
 
     // Invalida sólo el listado de categorías
-    if (redisClient) {
-      try {
-        await redisClient.del(`category:${id}`);
-        await redisClient.del('categories:all');
-      } catch (e) {
-        console.warn('[Redis] No se pudo invalidar categories:all', e);
-      }
-    }
+    await Promise.all([
+      clearCacheByPattern('categories:all'),
+      clearCacheByPattern(`category:${id}`),
+      clearCacheByPattern('pages:home'),
+      clearCacheByPattern('available_articles:*')
+    ]);
 
     return res.status(200).json({
       status: 'success',

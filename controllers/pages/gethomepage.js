@@ -13,7 +13,7 @@ const { getOrSetCache } = require('../../services/cacheservice');
 
 module.exports = async (req, res) => {
     try {
-        const cacheKey = 'pages:home'; // Clave para guardar todo el resultado en caché
+        const cacheKey = 'pages:home';
 
         const data = await getOrSetCache(cacheKey, async () => {
             // Usamos Promise.all para buscar secciones y categorías al mismo tiempo

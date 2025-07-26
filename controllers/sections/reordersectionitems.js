@@ -79,11 +79,16 @@ module.exports = async (req, res) => {
         await t.commit();
 
         // 7. Invalida caché de la sección
-        try {
-            await redisClient.del(`sections:${slug}:items`);
-        } catch (cacheErr) {
-            console.warn(`Error limpiando caché sections:${slug}:items`, cacheErr);
-        }
+        await Promise.all([
+            // ítems de esta sección
+            clearCacheByPattern(`sections:${slug}:items`),
+            // listado de secciones y home
+            clearCacheByPattern('sections:*'),
+            clearCacheByPattern('pages:*'),
+            // si tienes drafts o audios, también:
+            clearCacheByPattern('drafts:*'),
+            clearCacheByPattern('audios:*')
+        ]);
 
         // 8. Respuesta
         return res.status(200).json({

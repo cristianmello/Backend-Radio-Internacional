@@ -4,6 +4,21 @@ const SectionArticles = require('../../models/sectionarticles');
 const SectionLog = require('../../models/sectionlog');
 const redisClient = require('../../services/redisclient');
 
+async function clearCacheByPattern(pattern) {
+    try {
+        let cursor = '0';
+        do {
+            const [nextCursor, keys] = await redisClient.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+            if (keys.length) {
+                await redisClient.del(...keys);
+            }
+            cursor = nextCursor;
+        } while (cursor !== '0');
+    } catch (e) {
+        console.warn(`[Cache] Error limpiando el patrón "${pattern}":`, e);
+    }
+}
+
 module.exports = async (req, res) => {
     const t = await SectionArticles.sequelize.transaction();
     try {
@@ -63,11 +78,15 @@ module.exports = async (req, res) => {
 
         // 7. Commit y limpieza de cachFvé
         await t.commit();
-        // Borra todas las cachés relacionadas con secciones
-        const keys = await redisClient.keys('sections:*');
-        if (keys.length) {
-            await Promise.all(keys.map(k => redisClient.del(k)));
-        }
+
+        await Promise.all([
+            clearCacheByPattern('sections:*'),
+            clearCacheByPattern('pages:*'),
+            clearCacheByPattern('drafts:*'),
+            clearCacheByPattern('shorts:drafts:*'),
+            clearCacheByPattern('audios:*'),
+            clearCacheByPattern('advertisements:*')
+        ]);
 
         // 8. Respuesta
         res.status(201).json({

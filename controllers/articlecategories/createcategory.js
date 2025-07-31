@@ -53,15 +53,7 @@ module.exports = async (req, res, next) => {
     // Invalida sólo el listado de categorías
     await Promise.all([
       clearCacheByPattern('categories:all'),
-      clearCacheByPattern(`category:${id}`),
       clearCacheByPattern('pages:home'),
-      clearCacheByPattern('available_articles:*'),
-      clearCacheByPattern('sections:*'),
-      clearCacheByPattern('pages:*'),
-      clearCacheByPattern('drafts:*'),
-      clearCacheByPattern('shorts:drafts:*'),
-      clearCacheByPattern('audios:*'),
-      clearCacheByPattern('advertisements:*')
     ]);
 
     return res.status(201).json({

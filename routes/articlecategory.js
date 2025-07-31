@@ -19,10 +19,7 @@ const deleteCategory = require('../controllers/articlecategories/deletecategory'
 // Rutas públicas
 router.get('/', getAllCategories);
 router.get('/:id', getCategoryById);
-router.get(
-    '/api/sections/:sectionSlug/articles',
-    getSectionArticles
-);
+router.get('/api/sections/:sectionSlug/articles', getSectionArticles);
 
 // Rutas protegidas (solo admin y superadmin)
 router.post(

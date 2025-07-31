@@ -65,7 +65,7 @@ const SectionArticles = sequelize.define('SectionArticles', {
         comment: 'Marca si la sección es accesible sólo a usuarios autenticados'
     }
 }, {
-    tableName: 'sectionarticles', // nombre de tabla en BD
+    tableName: 'sectionarticles',
     timestamps: true,
     underscored: true,
     comment: 'Define las secciones dinámicas del Home'

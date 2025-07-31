@@ -134,46 +134,7 @@ module.exports = async (req, res) => {
                 ad_type: newAd.ad_type,
                 position
             };
-            /*            const ad = await Advertisement.findByPk(code, { transaction: t });
-                        if (!ad) {
-                            await t.rollback();
-                            return res.status(404).json({ status: 'error', message: 'Publicidad no encontrada.' });
-                        }
-            
-                        // Chequeo duplicado
-                        const existsAd = await SectionAdvertisementMap.findOne({
-                            where: { section_code: section.section_code, ad_id: code },
-                            transaction: t
-                        });
-                        if (existsAd) {
-                            await t.rollback();
-                            return res.status(400).json({ status: 'error', message: 'Esta publicidad ya está en la sección.' });
-                        }
-            
-                        // Desplazar posiciones
-                        await SectionAdvertisementMap.update(
-                            { position: SectionAdvertisementMap.sequelize.literal('position + 1') },
-                            { where: { section_code: section.section_code }, transaction: t }
-                        );
-            
-                        // Insertar en posición 0
-                        position = 0;
-                        await SectionAdvertisementMap.create({
-                            section_code: section.section_code,
-                            ad_id: code,
-                            position
-                        }, { transaction: t });
-            
-                        // Serializar el nuevo item para la respuesta
-                        newItem = {
-                            ad_id: ad.ad_id,
-                            ad_name: ad.ad_name,
-                            ad_image_url: ad.ad_image_url,
-                            ad_target_url: ad.ad_target_url,
-                            ad_type: ad.ad_type,
-                            position
-                        };
-            */
+    
         } else if (section.section_type === 'shorts') {
             // --- SHORTS ---
             const short = await Short.findByPk(code, { transaction: t });

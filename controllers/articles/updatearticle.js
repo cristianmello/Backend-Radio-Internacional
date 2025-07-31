@@ -128,10 +128,13 @@ module.exports = async (req, res) => {
         try {
             await clearByPattern(`article:${id}`);        // artículo individual
             await clearByPattern('articles:*');            // listados y paginaciones
+            await clearByPattern('pages:home');
             await clearByPattern('articles:category:*');   // listados por categoría
             await clearByPattern('articles:latest*');      // últimos
             await clearByPattern('categories:all');        // listado de categorías
             await clearByPattern('sections:*');            // todas las secciones cacheadas
+            await clearByPattern('available_articles:*');
+
         } catch (cacheErr) {
             console.error('Redis cleanup error', cacheErr);
         }

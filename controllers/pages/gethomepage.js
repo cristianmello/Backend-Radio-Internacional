@@ -5,10 +5,12 @@ const Audio = require('../../models/audios');
 const Advertisement = require('../../models/advertisement');
 const User = require('../../models/user');
 const ArticleCategory = require('../../models/articlecategory');
-// Importamos las tablas de mapeo para el orden
+const Short = require('../../models/short');
 const SectionArticleMap = require('../../models/sectionarticlemap');
 const SectionAudioMap = require('../../models/sectionaudiomap');
 const SectionAdvertisementMap = require('../../models/sectionadvertisementmap');
+const SectionShortMap = require('../../models/sectionshortmap');
+
 const { getOrSetCache } = require('../../services/cacheservice');
 
 module.exports = async (req, res) => {
@@ -16,77 +18,64 @@ module.exports = async (req, res) => {
         const cacheKey = 'pages:home';
 
         const data = await getOrSetCache(cacheKey, async () => {
-            // Usamos Promise.all para buscar secciones y categorías al mismo tiempo
-            const [sectionsWithContent, categories] = await Promise.all([
+            const [allSections, allCategories] = await Promise.all([
+                // --- TAREA 1: Obtener TODAS las secciones y su contenido en UNA SOLA QUERY ---
+                Section.findAll({
+                    include: [
+                        {
+                            model: Article,
+                            as: 'articles',
+                            where: { article_is_published: true },
+                            required: false, // LEFT JOIN
+                            through: { attributes: [] },
+                            include: [
+                                { model: User, as: 'author', attributes: ['user_name', 'user_lastname'] },
+                                { model: ArticleCategory, as: 'category', attributes: ['category_name', 'category_slug'] }
+                            ]
+                        },
+                        // --- 3. Añadir el include para Shorts ---
+                        {
+                            model: Short,
+                            as: 'shorts',
+                            where: { short_is_published: true },
+                            required: false, // LEFT JOIN
+                            through: { attributes: [] },
+                            include: [ // Los shorts también pueden tener autor y categoría
+                                { model: User, as: 'author', attributes: ['user_name', 'user_lastname'] },
+                                { model: ArticleCategory, as: 'category', attributes: ['category_name', 'category_slug'] }
+                            ]
+                        },
+                        {
+                            model: Audio,
+                            as: 'audios',
+                            required: false, // LEFT JOIN
+                            through: { attributes: [] }
+                        },
+                        {
+                            model: Advertisement,
+                            as: 'advertisements',
+                            where: {
+                                ad_is_active: true,
+                                [Op.and]: [
+                                    { [Op.or]: [{ ad_start_date: { [Op.is]: null } }, { ad_start_date: { [Op.lte]: new Date() } }] },
+                                    { [Op.or]: [{ ad_end_date: { [Op.is]: null } }, { ad_end_date: { [Op.gte]: new Date() } }] }
+                                ]
+                            },
+                            required: false, // LEFT JOIN
+                            through: { attributes: [] }
+                        }
+                    ],
+                    // Se ordena por la posición de la sección y luego por la posición de los ítems dentro de cada relación
+                    order: [
+                        ['section_position', 'ASC'],
+                        [{ model: Article, as: 'articles' }, SectionArticleMap, 'position', 'ASC'],
+                        [{ model: Short, as: 'shorts' }, SectionShortMap, 'position', 'ASC'], // <--- 4. Añadir orden para Shorts
+                        [{ model: Audio, as: 'audios' }, SectionAudioMap, 'position', 'ASC'],
+                        [{ model: Advertisement, as: 'advertisements' }, SectionAdvertisementMap, 'position', 'ASC']
+                    ]
+                }),
 
-                // --- TAREA 1: Obtener secciones con su contenido ---
-                (async () => {
-                    const sections = await Section.findAll({
-                        order: [['section_position', 'ASC']],
-                        raw: true,
-                    });
-
-                    // Hacemos un bucle sobre cada sección y buscamos su contenido específico
-                    return Promise.all(
-                        sections.map(async (section) => {
-                            let items = [];
-                            const adTypes = ['ad-large', 'ad-small', 'ad-banner', 'ad-skyscraper', 'ad-biglarge', 'ad-verticalsm'];
-
-                            if (adTypes.includes(section.section_type)) {
-                                // Lógica para Publicidad (con orden y fechas correctas)
-                                const withAds = await Section.findByPk(section.section_code, {
-                                    include: [{
-                                        model: Advertisement, as: 'advertisements', required: false,
-                                        where: {
-                                            ad_is_active: true,
-                                            [Op.and]: [
-                                                { [Op.or]: [{ ad_start_date: { [Op.is]: null } }, { ad_start_date: { [Op.lte]: new Date() } }] },
-                                                { [Op.or]: [{ ad_end_date: { [Op.is]: null } }, { ad_end_date: { [Op.gte]: new Date() } }] }
-                                            ]
-                                        },
-                                        through: { attributes: ['position'] }
-                                    }],
-                                    order: [[{ model: Advertisement, as: 'advertisements' }, SectionAdvertisementMap, 'position', 'ASC']]
-                                });
-                                items = withAds ? withAds.advertisements || [] : [];
-                            } else if (section.section_type === 'sideaudios') {
-                                // Lógica para Audios (con orden correcto)
-                                const withAudios = await Section.findByPk(section.section_code, {
-                                    include: [{ model: Audio, as: 'audios', required: false, through: { attributes: ['position'] } }],
-                                    order: [[{ model: Audio, as: 'audios' }, SectionAudioMap, 'position', 'ASC']]
-                                });
-                                items = withAudios ? (withAudios.audios || []).map(audio => audio.toJSON()) : [];
-                            } else {
-                                // Lógica para Artículos (con orden correcto y formato de datos)
-                                const withArticles = await Section.findByPk(section.section_code, {
-                                    include: [{
-                                        model: Article, as: 'articles', required: false, where: { article_is_published: true }, through: { attributes: ['position'] },
-                                        include: [
-                                            { model: User, as: 'author', attributes: ['user_name', 'user_lastname'] },
-                                            { model: ArticleCategory, as: 'category', attributes: ['category_name'] }
-                                        ]
-                                    }],
-                                    order: [[{ model: Article, as: 'articles' }, SectionArticleMap, 'position', 'ASC']]
-                                });
-
-                                items = withArticles ? (withArticles.articles || []).map(article => ({
-                                    article_code: article.article_code,
-                                    article_slug: article.article_slug,
-                                    title: article.article_title,
-                                    excerpt: article.article_excerpt,
-                                    image: article.article_image_url,
-                                    category: article.category?.category_name || null,
-                                    author: article.author ? `${article.author.user_name} ${article.author.user_lastname}` : null,
-                                    date: article.article_published_at,
-                                })) : [];
-                            }
-
-                            return { ...section, items };
-                        })
-                    );
-                })(),
-
-                // --- TAREA 2: Obtener todas las categorías ---
+                // --- TAREA 2: Obtener todas las categorías (sin cambios) ---
                 ArticleCategory.findAll({
                     order: [['category_code', 'ASC']],
                     attributes: ['category_code', 'category_name', 'category_slug'],
@@ -94,12 +83,63 @@ module.exports = async (req, res) => {
                 })
             ]);
 
-            // Devolvemos el objeto completo para guardarlo en caché
+            const sectionsWithContent = allSections.map(section => {
+                const sectionJSON = section.toJSON();
+                let items = [];
+                const adTypes = ['ad-large', 'ad-small', 'ad-banner', 'ad-skyscraper', 'ad-biglarge', 'ad-verticalsm'];
+
+                if (adTypes.includes(sectionJSON.section_type)) {
+                    items = sectionJSON.advertisements || [];
+                } else if (sectionJSON.section_type === 'shorts') {
+                    items = (sectionJSON.shorts || []).map(short => ({
+                        short_code: short.short_code,
+                        slug: short.short_slug,
+                        title: short.short_title,
+                        video_url: short.short_video_url,
+                        duration: short.short_duration,
+                        author: short.author ? `${short.author.user_name} ${short.author.user_lastname}`.trim() : null,
+                        category_name: short.category?.category_name || null,
+                        date: short.short_published_at
+                    }));
+                } else if (sectionJSON.section_type === 'sideaudios') {
+                    items = (sectionJSON.audios || []).map(audio => ({
+                        audio_code: audio.audio_code,
+                        slug: audio.audio_slug,
+                        title: audio.audio_title,
+                        audio_url: audio.audio_url,
+                        duration: audio.audio_duration,
+                        author: audio.author ? `${audio.author.user_name} ${audio.author.user_lastname}`.trim() : null,
+                        category_name: audio.category?.category_name || null,
+                        date: audio.audio_published_at
+                    }));
+                } else {
+                    items = (sectionJSON.articles || []).map(article => ({
+                        article_code: article.article_code,
+                        slug: article.article_slug,
+                        title: article.article_title,
+                        excerpt: article.article_excerpt,
+                        image: article.article_image_url,
+                        category_name: article.category?.category_name || null,
+                        category_slug: article.category?.category_slug || null,
+                        author: article.author ? `${article.author.user_name} ${article.author.user_lastname}`.trim() : null,
+                        date: article.article_published_at,
+                    }));
+                }
+
+                // Limpiamos los datos que no se usarán en el frontend para aligerar la respuesta
+                delete sectionJSON.articles;
+                delete sectionJSON.shorts;
+                delete sectionJSON.audios;
+                delete sectionJSON.advertisements;
+
+                return { ...sectionJSON, items };
+            });
+
             return {
                 sections: sectionsWithContent,
-                categories: categories,
+                categories: allCategories,
             };
-        }, 300); // 300 segundos = 5 minutos de caché
+        }, 300); // 5 minutos de caché
 
         res.set('Cache-Control', 'public, max-age=60, s-maxage=300');
         res.status(200).json(data);

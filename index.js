@@ -52,7 +52,6 @@ app.use(cors({
 }));
 
 // 3) HTTP logger 
-
 app.use((req, res, next) => {
   logger.info({
     message: 'HTTP Request',

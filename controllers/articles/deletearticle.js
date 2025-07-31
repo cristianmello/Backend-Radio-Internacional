@@ -88,10 +88,16 @@ module.exports = async (req, res) => {
         transactionFinished = true;
 
         // 6) Limpieza de caché en Redis
-        await clearByPattern(`article:${id}`);
-        await clearByPattern('articles:*');
-        await clearByPattern('drafts:*');
-        await clearByPattern('categories:all');
+        try {
+            await clearByPattern(`article:${id}`);
+            await clearByPattern('pages:home');
+            await clearByPattern('articles:*');
+            await clearByPattern('drafts:*');
+            await clearByPattern('sections:*');
+            await clearByPattern('available_articles:*');
+        } catch (cacheErr) {
+            console.error('Redis cleanup error after delete:', cacheErr);
+        }
 
         return res.status(200).json({
             status: 'success',

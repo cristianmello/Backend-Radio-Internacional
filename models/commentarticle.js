@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../database/connection');
+const { DataTypes } = require("sequelize");
+const sequelize = require("../database/connection")
 
 const CommentArticle = sequelize.define(
   'CommentArticle',
@@ -21,6 +21,15 @@ const CommentArticle = sequelize.define(
         }
       }
     },
+    comment_parent_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'commentarticles',
+        key: 'comment_id'
+      },
+      onDelete: 'CASCADE' // Si se borra el padre, se borran sus respuestas
+    },
     comment_article_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -39,25 +48,21 @@ const CommentArticle = sequelize.define(
       },
       onDelete: 'CASCADE'
     },
-    comment_created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW
-    },
     comment_is_approved: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: false
+      defaultValue: 1
     },
     comment_has_offensive_language: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: false
+      defaultValue: 0
     }
   },
   {
-    tableName: 'comment_articles',
-    timestamps: false,
+    tableName: 'commentarticles',
+    timestamps: true,
+    underscored: true,
     indexes: [
       {
         name: 'idx_comment_article',
@@ -66,9 +71,13 @@ const CommentArticle = sequelize.define(
       {
         name: 'idx_comment_user',
         fields: ['comment_user_id']
+      },
+      {
+        name: 'idx_comment_parent',
+        fields: ['comment_parent_id']
       }
     ]
   }
 );
 
-module.exports = CommentArticle;
+module.exports = CommentArticle

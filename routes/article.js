@@ -13,6 +13,8 @@ const uploadArticleImage = require('../middleware/articles/uploadarticleimages')
 const sharpArticleImage = require('../middleware/articles/sharparticleimage');
 const uploadContentImage = require('../middleware/articles/uploadcontentimage');
 
+const articleCommentRouter = require('./articlecomment.js');
+
 // Controllers
 const {
   GetArticles,
@@ -31,6 +33,8 @@ const {
 // ————— RUTAS PÚBLICAS —————
 // Listado paginado, con validación de query params
 router.get('/', validateGetArticles, GetArticles);
+
+router.use('/:articleId/comments', articleCommentRouter);
 
 // Rutas de “related” **antes** que `/:id/:slug`
 router.get('/:id/related', GetRelatedArticles);

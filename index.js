@@ -27,6 +27,7 @@ const audiosRouter = require('./routes/audio');
 const sectionsRouter = require('./routes/sections');
 const advertisementRoutes = require('./routes/advertisement');
 const contactRouter = require('./routes/contact');
+const commentRouter = require('./routes/comment.js');
 
 // Middleware de manejo de errores y autenticación
 const errorHandler = require('./middleware/errorhandler');
@@ -92,6 +93,7 @@ app.use((req, res, next) => {
 // 9) Routes
 app.use('/api/users', userRouter);
 app.use('/api/articles', articleRouter);
+app.use('/api/comments', commentRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/shorts', shortsRouter);
 app.use('/api/sections', sectionsRouter);

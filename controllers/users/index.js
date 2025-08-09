@@ -29,6 +29,8 @@ module.exports = {
   GetLoginHistory: require('./getloginhistory'),
   GetLoginHistoryCSV: require('./getloginhistorycsv'),
   GetRegisterHistory: require('./getregisterhistory'),
-  GetRegisterHistoryCSV: require('./getregisterhistorycsv')
+  GetRegisterHistoryCSV: require('./getregisterhistorycsv'),
+  GetMyComments: require('./getmycomments'),
+  GetUserProfileSummary: require('./getuserprofilesummary')
 
 };

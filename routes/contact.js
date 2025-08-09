@@ -7,6 +7,6 @@ const { contactFormLimiter } = require('../services/rateLimiter/contactFormLimit
 const sendContactEmail = require('../controllers/contacts/sendcontactemail');
 
 
-router.post('/', contactFormLimiter, sendContactEmail);
+/*router.post('/', contactFormLimiter, sendContactEmail);*/
 
 module.exports = router;

@@ -36,6 +36,8 @@ const {
   GetLoginHistoryCSV,
   GetRegisterHistory,
   GetRegisterHistoryCSV,
+  GetMyComments,
+  GetUserProfileSummary,
 } = require('../controllers/users');
 
 // Middlewares
@@ -87,14 +89,16 @@ router.get('/verify-email', VerifyEmail);
 
 // Rutas protegidas con JWT
 router.get('/profile', authenticate, GetProfile);
-router.put('/update', authenticate, isOwnerOrAdmin(req => req.user.id), 
-validateUserUpdate, handleValidationErrors, UpdateProfile);
+router.get('/me/comments', authenticate, GetMyComments);
+router.put('/update', authenticate, isOwnerOrAdmin(req => req.user.id),
+  validateUserUpdate, handleValidationErrors, UpdateProfile);
 router.post('/change-password', authenticate, validateChangePassword, handleValidationErrors, ChangePassword);
 router.post('/logout', authenticate, Logout);
 
 // Rutas de admin
 router.get('/roles/:role_code', authenticate, authorize('admin', 'superadmin'), validateRoleIdParam, GetRoleById);
 router.get('/:user_code', authenticate, authorize('admin', 'superadmin'), validateUserIdParam, GetUserById);
+router.get('/:user_code/profile-summary', GetUserProfileSummary);
 router.delete('/:user_code', authenticate, isOwnerOrAdmin(req => parseInt(req.params.user_code, 10)), validateUserIdParam, DeleteAccount);
 router.put('/role/:user_code', authenticate, authorize('superadmin'), validateUserIdParam, UpdateRole);
 

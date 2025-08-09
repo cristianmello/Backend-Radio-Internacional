@@ -27,6 +27,8 @@ const SectionAudioMap = require('../models/sectionaudiomap');
 const Advertisement = require('../models/advertisement');
 const AdvertisementLog = require('../models/advertisement_log');
 const SectionAdvertisementMap = require('../models/sectionadvertisementmap');
+const CommentVote = require('../models/commentvote');
+const CommentLog = require('../models/commentlog');
 
 const database = require('./connection');
 
@@ -160,9 +162,32 @@ User.hasMany(CommentArticle, {
   onUpdate: 'CASCADE'
 });
 CommentArticle.belongsTo(User, {
-  as: 'user',
+  as: 'author',
   foreignKey: 'comment_user_id'
 });
+CommentArticle.hasMany(CommentArticle, {
+  as: 'replies',
+  foreignKey: 'comment_parent_id'
+})
+CommentArticle.belongsTo(CommentArticle, {
+  as: 'parent',
+  foreignKey: 'comment_parent_id'
+});
+
+// Usuario <-> Votos
+User.hasMany(CommentVote, { foreignKey: 'user_id' });
+CommentVote.belongsTo(User, { foreignKey: 'user_id' });
+
+// Comentario <-> Votos
+CommentArticle.hasMany(CommentVote, { as: 'votes', foreignKey: 'comment_id' });
+CommentVote.belongsTo(CommentArticle, { foreignKey: 'comment_id' });
+
+User.hasMany(CommentLog, { foreignKey: 'user_id' });
+CommentLog.belongsTo(User, { foreignKey: 'user_id' });
+
+// Un comentario puede tener muchos logs asociados
+CommentArticle.hasMany(CommentLog, { as: 'logs', foreignKey: 'comment_id' });
+CommentLog.belongsTo(CommentArticle, { foreignKey: 'comment_id' });
 
 // 8) CommentArticle → CommentEdit y CommentEdit → User
 CommentArticle.hasMany(CommentEdit, {

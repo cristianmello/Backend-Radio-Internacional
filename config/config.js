@@ -12,12 +12,14 @@ module.exports = {
     logging: process.env.DB_LOGGING === 'true' ? console.log : false
   },
   production: {
-    username: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE,
-    host: process.env.MYSQLHOST,
-    port: process.env.MYSQLPORT,
+    use_env_variable: "MYSQL_URL",
     dialect: 'mysql',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
     logging: false
   }
 };

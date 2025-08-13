@@ -102,9 +102,14 @@ app.use(cookieParser());
 app.use(csrf({ cookie: true }));
 
 app.use((req, res, next) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken());
+  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+    domain: '.realidadnacional.net',
+    secure: true,
+    sameSite: 'lax'
+  });
   next();
 });
+
 // 8) Request ID for logs
 app.use((req, res, next) => {
   req.id = uuidv4();

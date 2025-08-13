@@ -12,7 +12,7 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
 const { buildSitemap } = require('./generate-sitemap.cjs');
-
+const csrf = require('csurf');
 const database = require('./database/connection');
 const getHomePageData = require('./controllers/pages/gethomepage');
 
@@ -80,9 +80,31 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ limit: '6mb', extended: true }));
 app.disable('x-powered-by');
 
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { status: 'error', message: 'Demasiadas solicitudes, inténtalo despues de 15 minutos.' },
+
+  skip: (req, res) => {
+    if (req.method === 'GET') {
+      return true;
+    }
+    return false;
+  }
+});
+app.use('/api/', apiLimiter);
+
 // 7) Cookie parser + CSRF
 app.use(cookieParser());
 
+app.use(csrf({ cookie: true }));
+
+app.use((req, res, next) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken());
+  next();
+});
 // 8) Request ID for logs
 app.use((req, res, next) => {
   req.id = uuidv4();
@@ -103,7 +125,16 @@ app.use('/api/contacts', contactRouter);
 
 app.get('/api/pages/home', getHomePageData);
 
-app.post('/api/sitemap/regenerate', async (req, res) => {
+const sitemapLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { status: 'error', message: 'Demasiados intentos de regenerar el sitemap.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+
+app.post('/api/sitemap/regenerate', sitemapLimiter, async (req, res) => {
   console.log('=== /api/sitemap/regenerate called ===');
   console.log('Headers:', req.headers);
   console.log('req.ip:', req.ip);

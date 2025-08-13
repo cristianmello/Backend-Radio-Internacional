@@ -102,7 +102,12 @@ app.use(cookieParser());
 app.use(csrf({ cookie: true }));
 
 app.use((req, res, next) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+  const csrfToken = req.csrfToken(); // Obtenemos el token
+
+  // --- SENSOR 1: VER EL TOKEN GENERADO ---
+  console.log(`[CSRF Backend] Token generado para esta petición: ${csrfToken}`);
+
+  res.cookie('XSRF-TOKEN', csrfToken, {
     domain: '.realidadnacional.net',
     secure: true,
     sameSite: 'lax'

@@ -5,11 +5,6 @@ const router = express.Router();
 const authenticate = require('../middleware/verifytoken');
 const authorize = require('../middleware/authorizerole');
 const handleValidationErrors = require('../middleware/handlevalidationerrors');
-router.use((req, res, next) => {
-  console.log(`[ROUTER /api/sections] Petición recibida: ${req.method} ${req.originalUrl}`);
-  console.log('[ROUTER /api/sections] Parámetros:', req.params);
-  next();
-});
 
 const {
   validateCreateSection,
@@ -18,7 +13,7 @@ const {
   validateRemoveItem,
   validateReorder,
   validateUpdateSection
-} = require('../middleware/sections/validateSection');
+} = require('../middleware/sections/validatesection');
 
 // Controllers
 const {

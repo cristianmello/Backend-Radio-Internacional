@@ -77,5 +77,6 @@ module.exports = {
     validateGetSection,
     validateAddItem,
     validateRemoveItem,
-    validateReorder
+    validateReorder,
+    validateUpdateSection
 };

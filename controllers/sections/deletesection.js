@@ -2,13 +2,14 @@ const SectionArticles = require('../../models/sectionarticles');
 const SectionArticleMap = require('../../models/sectionarticlemap');
 const SectionShortMap = require('../../models/sectionshortmap');
 const SectionAudioMap = require('../../models/sectionaudiomap');
-const SectionAdvertisementMap = require('../../models/sectionadvertisementmap'); // <-- 1. IMPORTAR PIVOT DE ANUNCIOS
+const SectionAdvertisementMap = require('../../models/sectionadvertisementmap');
 const SectionLog = require('../../models/sectionlog');
 const Article = require('../../models/article');
 const Short = require('../../models/short');
 const Audio = require('../../models/audios');
-const Advertisement = require('../../models/advertisement'); // <-- 2. IMPORTAR MODELO DE ANUNCIOS
+const Advertisement = require('../../models/advertisement');
 const redisClient = require('../../services/redisclient');
+const { Op } = require('sequelize');
 
 // Helper para limpiar caché de forma segura
 async function clearCacheByPattern(pattern) {
@@ -62,20 +63,53 @@ module.exports = async (req, res) => {
         const articlePivots = await SectionArticleMap.findAll({ where: { section_code: section.section_code }, transaction: t });
         const shortPivots = await SectionShortMap.findAll({ where: { section_code: section.section_code }, transaction: t });
         const audioPivots = await SectionAudioMap.findAll({ where: { section_code: section.section_code }, transaction: t });
-        const adPivots = await SectionAdvertisementMap.findAll({ where: { section_code: section.section_code }, transaction: t }); // <-- 3. AÑADIDO
+        const adPivots = await SectionAdvertisementMap.findAll({ where: { section_code: section.section_code }, transaction: t });
 
         // 5) Desactivar/Despublicar items asociados
-        for (const { article_code } of articlePivots) {
-            await Article.update({ article_is_published: false }, { where: { article_code }, transaction: t });
+        for (const pivot of articlePivots) {
+            // Contamos en cuántas OTRAS secciones aparece este artículo
+            const otherAppearances = await SectionArticleMap.count({
+                where: {
+                    article_code: pivot.article_code,
+                    section_code: { [Op.ne]: section.section_code } // [Op.ne] significa "No es Igual"
+                },
+                transaction: t
+            });
+
+            // Si no aparece en ninguna otra sección, lo despublicamos.
+            if (otherAppearances === 0) {
+                await Article.update({ article_is_published: false }, { where: { article_code: pivot.article_code }, transaction: t });
+            }
         }
-        for (const { short_code } of shortPivots) {
-            await Short.update({ short_is_published: false }, { where: { short_code }, transaction: t });
+
+        for (const pivot of shortPivots) {
+            const otherAppearances = await SectionShortMap.count({
+                where: {
+                    short_code: pivot.short_code,
+                    section_code: { [Op.ne]: section.section_code }
+                },
+                transaction: t
+            });
+            if (otherAppearances === 0) {
+                await Short.update({ short_is_published: false }, { where: { short_code: pivot.short_code }, transaction: t });
+            }
         }
-        for (const { audio_code } of audioPivots) {
-            await Audio.update({ audio_is_published: false }, { where: { audio_code }, transaction: t });
+
+        for (const pivot of audioPivots) {
+            const otherAppearances = await SectionAudioMap.count({
+                where: {
+                    audio_code: pivot.audio_code,
+                    section_code: { [Op.ne]: section.section_code }
+                },
+                transaction: t
+            });
+            if (otherAppearances === 0) {
+                await Audio.update({ audio_is_published: false }, { where: { audio_code: pivot.audio_code }, transaction: t });
+            }
         }
-        // Bucle para desactivar los anuncios que estaban en la sección eliminada
-        for (const { ad_id } of adPivots) { // <-- 4. AÑADIDO
+
+        // Para los anuncios, mantenemos la lógica de simplemente desactivarlos
+        for (const { ad_id } of adPivots) {
             await Advertisement.update({ ad_is_active: false }, { where: { ad_id }, transaction: t });
         }
 

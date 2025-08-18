@@ -5,33 +5,39 @@ const router = express.Router();
 const authenticate = require('../middleware/verifytoken');
 const authorize = require('../middleware/authorizerole');
 const handleValidationErrors = require('../middleware/handlevalidationerrors');
+router.use((req, res, next) => {
+  console.log(`[ROUTER /api/sections] Petición recibida: ${req.method} ${req.originalUrl}`);
+  console.log('[ROUTER /api/sections] Parámetros:', req.params);
+  next();
+});
 
 const {
   validateCreateSection,
   validateGetSection,
   validateAddItem,
   validateRemoveItem,
-  validateReorder
-} = require('../middleware/sections/validatesection');
+  validateReorder,
+  validateUpdateSection
+} = require('../middleware/sections/validateSection');
 
 // Controllers
 const {
-  GetSections,           // GET    /api/sections
-  GetSectionItems,       // GET    /api/sections/:slug
-  CreateSection,         // POST   /api/sections
-  DeleteSection,         // DELETE /api/sections/:slug
-  AddItemToSection,      // POST   /api/sections/:slug
-  RemoveItemFromSection, // DELETE /api/sections/:slug/:code
-  ReorderSectionItems    // PUT    /api/sections/:slug/reorder
+  GetSections,
+  GetSectionItems,
+  CreateSection,
+  DeleteSection,
+  AddItemToSection,
+  RemoveItemFromSection,
+  ReorderSectionItems,
+  UpdateSection,
+
 } = require('../controllers/sections');
 
-// 1) Listar todas las secciones
 router.get(
   '/',
   GetSections
 );
 
-// 2) Crear una sección
 router.post(
   '/',
   authenticate,
@@ -41,45 +47,6 @@ router.post(
   CreateSection
 );
 
-// 3) Eliminar una sección
-router.delete(
-  '/:slug',
-  authenticate,
-  authorize('editor', 'admin', 'superadmin'),
-  validateGetSection,
-  handleValidationErrors,
-  DeleteSection
-);
-
-// 4) Obtener los ítems de una sección
-router.get(
-  '/:slug',
-  validateGetSection,
-  handleValidationErrors,
-  GetSectionItems
-);
-
-// 5) Añadir un ítem (artículo o short) a la sección
-router.post(
-  '/:slug',
-  authenticate,
-  authorize('editor', 'admin', 'superadmin'),
-  validateAddItem,
-  handleValidationErrors,
-  AddItemToSection
-);
-
-// 6) Quitar un ítem de la sección
-router.delete(
-  '/:slug/:code',
-  authenticate,
-  authorize('editor', 'admin', 'superadmin'),
-  validateRemoveItem,
-  handleValidationErrors,
-  RemoveItemFromSection
-);
-
-// 7) Reordenar los ítems dentro de la sección
 router.put(
   '/:slug/reorder',
   authenticate,
@@ -89,4 +56,50 @@ router.put(
   ReorderSectionItems
 );
 
+router.delete(
+  '/:slug/:code',
+  authenticate,
+  authorize('editor', 'admin', 'superadmin'),
+  validateRemoveItem,
+  handleValidationErrors,
+  RemoveItemFromSection
+);
+
+router.put(
+  '/:slug',
+  authenticate,
+  authorize('editor', 'admin', 'superadmin'),
+  validateUpdateSection,
+  handleValidationErrors,
+  UpdateSection
+);
+
+router.post(
+  '/:slug',
+  authenticate,
+  authorize('editor', 'admin', 'superadmin'),
+  validateAddItem,
+  handleValidationErrors,
+  AddItemToSection
+);
+
+router.delete(
+  '/:slug',
+  authenticate,
+  authorize('editor', 'admin', 'superadmin'),
+  validateGetSection,
+  handleValidationErrors,
+  DeleteSection
+);
+
+router.get(
+  '/:slug',
+  validateGetSection,
+  handleValidationErrors,
+  GetSectionItems
+);
+
+
+
 module.exports = router;
+

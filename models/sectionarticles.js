@@ -19,6 +19,12 @@ const SectionArticles = sequelize.define('SectionArticles', {
         allowNull: true,
         comment: 'Título a mostrar de la sección (opcional)'
     },
+    background_color: {
+        type: DataTypes.STRING(7),
+        allowNull: true,
+        defaultValue: '#f8f9fa',
+        comment: 'Color de fondo hexadecimal para la sección'
+    },
     section_type: {
         type: DataTypes.ENUM(
             'breaking',    // Últimas Noticias

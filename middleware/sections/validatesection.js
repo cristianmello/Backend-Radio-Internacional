@@ -44,22 +44,26 @@ const validateAddItem = [
         .isInt({ gt: 0 }).withMessage('El código debe ser un entero positivo.'),
 ];
 
-/**
- * Valida DELETE /api/sections/:slug/:code  (quitar ítem)
- * - slug: validado arriba
- * - code: número entero > 0
- */
 const validateRemoveItem = [
     ...validateGetSection,
     param('code')
         .isInt({ gt: 0 }).withMessage('El código debe ser un entero positivo.'),
 ];
 
-/**
- * Valida PUT /api/sections/:slug/reorder
- * - slug: validado arriba
- * - orderedCodes: array de enteros >0
- */
+const validateUpdateSection = [
+    param('slug').notEmpty().withMessage('El slug de la sección es requerido.'),
+
+    body('section_title')
+        .optional()
+        .notEmpty().withMessage('El título no puede estar vacío si se incluye.')
+        .isString().withMessage('El título debe ser una cadena de texto.')
+        .trim(),
+
+    body('background_color')
+        .optional()
+        .isHexColor().withMessage('El color de fondo debe ser un código hexadecimal válido (ej: #FFFFFF).')
+];
+
 const validateReorder = [
     ...validateGetSection,
     body('orderedCodes')

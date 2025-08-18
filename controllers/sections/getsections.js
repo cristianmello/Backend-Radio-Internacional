@@ -16,7 +16,8 @@ module.exports = async (req, res) => {
                     'section_type',
                     'section_position',
                     'section_limit',
-                    'is_protected'
+                    'is_protected',
+                    'background_color'
                 ]
             });
             return { status: 'success', sections };

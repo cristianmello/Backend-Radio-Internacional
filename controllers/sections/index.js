@@ -8,4 +8,6 @@ module.exports = {
     AddItemToSection: require('./additemtosection'),
     RemoveItemFromSection: require('./removeitemfromsection'),
     ReorderSectionItems: require('./reordersectionitems'),
+    UpdateSection: require('./updatesection'),
+
 };

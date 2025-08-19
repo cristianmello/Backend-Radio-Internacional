@@ -117,31 +117,17 @@ const csrfExclusionPaths = [
 ];
 
 app.use((req, res, next) => {
-  const pathWithoutQuery = req.originalUrl.split('?')[0];
-
-  if (req.method === 'GET' || csrfExclusionPaths.includes(pathWithoutQuery)) {
-    // Generar un token real de todos modos
-    const token = req.csrfToken ? req.csrfToken() : null;
-
-    if (token) {
-      res.cookie('XSRF-TOKEN', token, {
-        domain: '.realidadnacional.net',
-        secure: true,
-        sameSite: 'lax'
-      });
-    }
-
-    return next();
-  }
-
-  csrfProtection(req, res, () => {
-    res.cookie('XSRF-TOKEN', req.csrfToken(), {
+  try {
+    const csrfToken = req.csrfToken();
+    res.cookie('XSRF-TOKEN', csrfToken, {
       domain: '.realidadnacional.net',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax'
     });
-    next();
-  });
+  } catch (err) {
+    // Por rutas que no aplican CSRF (como sitemap o APIs públicas)
+  }
+  next();
 });
 
 // 9) Routes

@@ -119,19 +119,22 @@ const csrfExclusionPaths = [
 app.use((req, res, next) => {
   const pathWithoutQuery = req.originalUrl.split('?')[0];
 
-  // Si la petición es GET o la ruta está en la lista de exclusión, la saltamos y no aplicamos protección CSRF.
   if (req.method === 'GET' || csrfExclusionPaths.includes(pathWithoutQuery)) {
-    res.cookie('XSRF-TOKEN', 'NO_CSRF', {
-      domain: '.realidadnacional.net',
-      secure: true,
-      sameSite: 'lax'
-    });
+    // Generar un token real de todos modos
+    const token = req.csrfToken ? req.csrfToken() : null;
+
+    if (token) {
+      res.cookie('XSRF-TOKEN', token, {
+        domain: '.realidadnacional.net',
+        secure: true,
+        sameSite: 'lax'
+      });
+    }
+
     return next();
   }
 
-  // Para las demás rutas (POST, PUT, DELETE) aplicamos la protección.
   csrfProtection(req, res, () => {
-    // Después de que la protección CSRF se aplica, el token se genera y lo enviamos en la cookie.
     res.cookie('XSRF-TOKEN', req.csrfToken(), {
       domain: '.realidadnacional.net',
       secure: true,

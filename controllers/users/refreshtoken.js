@@ -65,6 +65,15 @@ const refreshToken = async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
     });
 
+    if (req.csrfToken) {
+      res.cookie('XSRF-TOKEN', req.csrfToken(), {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/',
+      });
+    }
+
     return res.status(200).json({
       status: 'success',
       message: 'Tokens renovados correctamente.',

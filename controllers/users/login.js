@@ -54,6 +54,17 @@ const login = async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
   });
 
+  // ⚡️ Generar y enviar cookie XSRF-TOKEN visible para el frontend
+  if (req.csrfToken) {
+    res.cookie('XSRF-TOKEN', req.csrfToken(), {
+      httpOnly: false,                  // visible para JS
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      domain: '.realidadnacional.net',  // importante: dominio raíz
+      path: '/'
+    });
+  }
+
 
   try {
     await LoginLog.create({

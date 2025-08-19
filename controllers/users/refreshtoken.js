@@ -69,7 +69,8 @@ const refreshToken = async (req, res) => {
       res.cookie('XSRF-TOKEN', req.csrfToken(), {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
+        domain: '.realidadnacional.net',
         path: '/',
       });
     }

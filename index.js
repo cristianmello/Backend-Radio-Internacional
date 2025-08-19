@@ -106,7 +106,6 @@ app.use('/api/', apiLimiter);
 // 7) Cookie parser + CSRF
 app.use(cookieParser());
 
-const csrfProtection = csrf({ cookie: true });
 const csrfExclusionPaths = [
   '/api/users/login',
   '/api/users/register',
@@ -114,19 +113,41 @@ const csrfExclusionPaths = [
   '/api/users/reset-password',
   '/api/users/send-verification-email',
   '/api/users/verify-email',
+  '/api/users/refresh-token',
 ];
 
-app.use((req, res, next) => {
-  try {
-    const csrfToken = req.csrfToken();
-    res.cookie('XSRF-TOKEN', csrfToken, {
-      domain: '.realidadnacional.net',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    });
-  } catch (err) {
-    // Por rutas que no aplican CSRF (como sitemap o APIs públicas)
+// Crea el middleware CSRF con la configuración correcta
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Lax',
+    path: '/'
+  },
+  value: (req) => {
+    return req.headers['csrf-token'];
   }
+});
+
+// Middleware para aplicar la protección CSRF de forma condicional
+app.use((req, res, next) => {
+  // Si la ruta es un GET o está en la lista de exclusión, pasa al siguiente middleware
+  if (req.method === 'GET' || csrfExclusionPaths.includes(req.originalUrl)) {
+    return next();
+  }
+  // Si no, aplica la protección CSRF
+  csrfProtection(req, res, next);
+});
+
+// Middleware para generar la cookie XSRF-TOKEN
+app.use((req, res, next) => {
+  const csrfToken = req.csrfToken();
+  res.cookie('XSRF-TOKEN', csrfToken, {
+    domain: '.realidadnacional.net',
+    secure: true,
+    sameSite: 'lax',
+    httpOnly: false
+  });
   next();
 });
 

@@ -131,24 +131,34 @@ const csrfProtection = csrf({
 
 // Middleware para aplicar la protección CSRF de forma condicional
 app.use((req, res, next) => {
-  // Si la ruta es un GET o está en la lista de exclusión, pasa al siguiente middleware
-  if (req.method === 'GET' || csrfExclusionPaths.includes(req.originalUrl)) {
-    return next();
-  }
-  // Si no, aplica la protección CSRF
-  csrfProtection(req, res, next);
-});
+  // Ejecutamos el middleware de csurf en cada petición.
+  // Este se encargará de validar (en POST, PUT, etc.) y de añadir la función req.csrfToken().
+  csrfProtection(req, res, (err) => {
+    // 'err' solo existirá si la validación del token falla en un método como POST.
 
-// Middleware para generar la cookie XSRF-TOKEN
-app.use((req, res, next) => {
-  const csrfToken = req.csrfToken();
-  res.cookie('XSRF-TOKEN', csrfToken, {
-    domain: '.realidadnacional.net',
-    secure: true,
-    sameSite: 'lax',
-    httpOnly: false
+    // Comprobamos si la ruta actual está en nuestra lista de exclusión.
+    const isExcluded = csrfExclusionPaths.includes(req.originalUrl);
+
+    if (err && !isExcluded) {
+      // Si hay un error de CSRF Y la ruta NO está excluida, es un ataque o un error real.
+      // Pasamos el error al manejador de errores global.
+      return next(err);
+    }
+
+    // Si no hay error, O si hay un error pero la ruta ESTÁ EXCLUIDA (como /login),
+    // ignoramos el error y continuamos.
+
+    // En este punto, estamos seguros de que req.csrfToken() existe.
+    const token = req.csrfToken();
+    res.cookie('XSRF-TOKEN', token, {
+      domain: '.realidadnacional.net',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      httpOnly: false
+    });
+
+    next();
   });
-  next();
 });
 
 // 9) Routes

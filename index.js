@@ -99,7 +99,25 @@ app.use('/api/', apiLimiter);
 // 7) Cookie parser + CSRF
 app.use(cookieParser());
 
-app.use(csrf({ cookie: true }));
+const csrfProtection = csrf({ cookie: true });
+const csrfExclusionPaths = [
+  '/api/users/login',
+  '/api/users/register',
+  '/api/users/forgot-password',
+  '/api/users/reset-password',
+  '/api/users/send-verification-email',
+  '/api/users/verify-email',
+];
+
+app.use((req, res, next) => {
+  if (csrfExclusionPaths.includes(req.originalUrl.split('?')[0])) {
+    // Si la URL está en la lista de exclusión, la saltamos.
+    // req.originalUrl.split('?')[0] ignora los query params
+    return next();
+  }
+  // Para las demás rutas, aplicamos la protección CSRF.
+  csrfProtection(req, res, next);
+});
 
 app.use((req, res, next) => {
   const csrfToken = req.csrfToken(); // Obtenemos el token

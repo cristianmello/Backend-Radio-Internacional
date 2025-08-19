@@ -38,9 +38,9 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.set('trust proxy', 1);
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 1) Security headers 
 app.use(helmet());
@@ -51,6 +51,13 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
+
+// 8) Request ID for logs
+app.use((req, res, next) => {
+  req.id = uuidv4();
+  res.setHeader('X-Request-Id', req.id);
+  next();
+});
 
 // 3) HTTP logger 
 app.use((req, res, next) => {
@@ -110,31 +117,28 @@ const csrfExclusionPaths = [
 ];
 
 app.use((req, res, next) => {
-  if (csrfExclusionPaths.includes(req.originalUrl.split('?')[0])) {
-    // Si la URL está en la lista de exclusión, la saltamos.
-    // req.originalUrl.split('?')[0] ignora los query params
+  const pathWithoutQuery = req.originalUrl.split('?')[0];
+
+  // Si la petición es GET o la ruta está en la lista de exclusión, la saltamos y no aplicamos protección CSRF.
+  if (req.method === 'GET' || csrfExclusionPaths.includes(pathWithoutQuery)) {
+    res.cookie('XSRF-TOKEN', 'NO_CSRF', {
+      domain: '.realidadnacional.net',
+      secure: true,
+      sameSite: 'lax'
+    });
     return next();
   }
-  // Para las demás rutas, aplicamos la protección CSRF.
-  csrfProtection(req, res, next);
-});
 
-app.use((req, res, next) => {
-  const csrfToken = req.csrfToken(); // Obtenemos el token
-
-  res.cookie('XSRF-TOKEN', csrfToken, {
-    domain: '.realidadnacional.net',
-    secure: true,
-    sameSite: 'lax'
+  // Para las demás rutas (POST, PUT, DELETE) aplicamos la protección.
+  csrfProtection(req, res, () => {
+    // Después de que la protección CSRF se aplica, el token se genera y lo enviamos en la cookie.
+    res.cookie('XSRF-TOKEN', req.csrfToken(), {
+      domain: '.realidadnacional.net',
+      secure: true,
+      sameSite: 'lax'
+    });
+    next();
   });
-  next();
-});
-
-// 8) Request ID for logs
-app.use((req, res, next) => {
-  req.id = uuidv4();
-  res.setHeader('X-Request-Id', req.id);
-  next();
 });
 
 // 9) Routes

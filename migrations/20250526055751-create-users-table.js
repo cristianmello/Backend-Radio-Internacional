@@ -33,7 +33,7 @@ module.exports = {
       user_image: {
         type: Sequelize.STRING(255),
         allowNull: false,
-        defaultValue: 'https://storage.bunnycdn.com/radiointernacional/profile-images/default.webp'
+        defaultValue: 'https://realidadnacional.b-cdn.net/profile-images/default.webp'
       },
       user_password: {
         type: Sequelize.STRING(255),

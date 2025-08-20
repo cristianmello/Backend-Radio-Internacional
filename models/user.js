@@ -86,11 +86,10 @@ const User = sequelize.define('User', {
       }
     }
   },
-
   user_image: {
     type: DataTypes.STRING(255),
     allowNull: false,
-    defaultValue: 'https://storage.bunnycdn.com/radiointernacional/profile-images/default.webp'
+    defaultValue: 'https://realidadnacional.b-cdn.net/profile-images/default.webp'
   },
   user_password: {
     type: DataTypes.STRING(255),

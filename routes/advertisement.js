@@ -26,7 +26,7 @@ const {
 
 
 // GET: Obtener todas las publicidades
-router.get('/', authenticate, authorize('editor', 'admin', 'superadmin'), GetAllAds);
+router.get('/', GetAllAds);
 
 router.get('/drafts', authenticate, authorize('editor', 'admin', 'superadmin'), GetDraftAds);
 

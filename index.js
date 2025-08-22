@@ -215,7 +215,11 @@ app.use((req, res) => {
 });
 
 // 11) Global error handler
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+  console.error(`[${req.id}] ERROR en ${req.method} ${req.originalUrl}:`, err.message);
+
+  return errorHandler(err, req, res, next);
+});
 
 // Start server & connect DB
 (async () => {

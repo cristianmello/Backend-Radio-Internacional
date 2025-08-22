@@ -5,6 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const csrf = require('csurf');
 const path = require('path');
 const logger = require('./utils/logger');
 const compression = require('compression');
@@ -12,7 +13,6 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
 const { buildSitemap } = require('./generate-sitemap.cjs');
-const csrf = require('csurf');
 const database = require('./database/connection');
 const getHomePageData = require('./controllers/pages/gethomepage');
 
@@ -48,7 +48,7 @@ app.use(helmet());
 // 2) CORS (solo desde tu frontend) 
 app.use(cors({
   origin: process.env.CLIENT_URL,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true
 }));
 

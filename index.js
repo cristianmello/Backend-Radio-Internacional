@@ -40,10 +40,10 @@ const port = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 // 1) Security headers 
 app.use(helmet());
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 2) CORS (solo desde tu frontend) 
 app.use(cors({

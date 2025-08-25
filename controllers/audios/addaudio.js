@@ -1,11 +1,12 @@
 // src/controllers/audios/addAudio.js
-
 const ArticleCategory = require('../../models/articlecategory');
 const User = require('../../models/user');
 const redisClient = require('../../services/redisclient');
 const { uploadToBunny } = require('../../services/bunnystorage');
 const AudioLog = require('../../models/audio_log');
 const Audio = require('../../models/audios');
+const { promises: fsp } = require('fs');
+
 
 async function clearByPattern(pattern) {
     let cursor = '0';
@@ -20,6 +21,9 @@ async function clearByPattern(pattern) {
 
 module.exports = async (req, res) => {
     const t = await Audio.sequelize.transaction();
+    const tempFilePath = req.processedAudio ? req.processedAudio.originalPath : null;
+    let newAudioUrl = null;
+
     try {
         const {
             audio_title,
@@ -46,20 +50,24 @@ module.exports = async (req, res) => {
             throw { status: 400, message: 'Debe enviar un archivo de audio válido.' };
         }
 
-        const { buffer, filename, duration } = req.processedAudio;
+        const { filename, duration, isFallback } = req.processedAudio;
         if (duration == null || duration < 1) {
             throw { status: 400, message: 'No se pudo determinar la duración del audio.' };
         }
 
-        // 4) Subir el buffer a Bunny
-        const audio_url = await uploadToBunny(buffer, 'article-audios/', filename);
+        // 2. Usamos la lectura ASÍNCRONA (no bloqueante)
+        const bufferToUpload = isFallback
+            ? await fsp.readFile(tempFilePath)
+            : req.processedAudio.buffer;
+
+        newAudioUrl = await uploadToBunny(bufferToUpload, 'article-audios/', filename);
 
         // 5) Crear la nota de audio con is_published = false
         const newAudio = await Audio.create({
             audio_title,
             audio_slug,
             audio_duration: duration,
-            audio_url,
+            audio_url: newAudioUrl,
             audio_author_id,
             audio_category_id,
             audio_published_at: audio_published_at || new Date(),
@@ -96,13 +104,19 @@ module.exports = async (req, res) => {
 
     } catch (err) {
         if (!t.finished) await t.rollback();
-        console.error('[Audios][Create]', err);
-        if (err.status) {
-            return res.status(err.status).json({ status: 'error', message: err.message });
+
+        if (newAudioUrl) {
+            await deleteFromBunny(newAudioUrl).catch(e => console.error("Error eliminando nuevo audio tras fallo:", e));
         }
-        return res.status(500).json({
-            status: 'error',
-            message: 'Error al crear la nota de audio.'
-        });
+
+        console.error('[Audios][Create]', err);
+        const statusCode = err.status || 500;
+        const message = err.message || 'Error al crear la nota de audio.';
+        return res.status(statusCode).json({ status: 'error', message });
+
+    } finally {
+        if (tempFilePath) {
+            await fsp.unlink(tempFilePath).catch(e => console.error("Error al limpiar archivo temporal:", e));
+        }
     }
 };

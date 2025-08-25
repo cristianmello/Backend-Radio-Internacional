@@ -1,9 +1,23 @@
 /* middleware/audios/uploadAudio.js */
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Usamos memoryStorage para procesar el buffer y luego subirlo
-const storage = multer.memoryStorage();
+const uploadDir = 'uploads/';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir); // Guarda los archivos en la carpeta 'uploads/'
+    },
+    filename: (req, file, cb) => {
+        // Genera un nombre único para evitar sobreescribir archivos
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'audio-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
 
 const allowedMimes = [
     'audio/mpeg',
@@ -26,7 +40,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 module.exports = multer({
-    storage,
+    storage: storage,
     limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter
 }).single('audio_file');

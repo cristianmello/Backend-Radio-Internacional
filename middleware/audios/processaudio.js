@@ -3,6 +3,7 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const stream = require('stream');
 const path = require('path');
+const { parseFile } = require('music-metadata');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -11,16 +12,11 @@ module.exports = async (req, res, next) => {
 
     let durationSec = null;
     try {
-        const { parseBuffer } = await import('music-metadata');
-
-        const meta = await parseBuffer(req.file.buffer, req.file.mimetype, { duration: true });
-        durationSec = Math.floor(meta.format.duration);
+        const metadata = await parseFile(req.file.path);
+        durationSec = Math.floor(metadata.format.duration);
     } catch (err) {
         console.warn('[processAudio] no se pudo leer duración:', err.message);
     }
-
-    const inStream = new stream.PassThrough();
-    inStream.end(req.file.buffer);
 
     // Parámetros de recodificación
     const targetCodec = 'libopus';      // u 'libmp3lame', 'aac'
@@ -31,7 +27,7 @@ module.exports = async (req, res, next) => {
     const chunks = [];
     const outStream = new stream.PassThrough();
 
-    ffmpeg(inStream)
+    ffmpeg(req.file.path)
         .audioCodec(targetCodec)
         .audioChannels(1)
         .audioFrequency(sampleRate)
@@ -41,8 +37,9 @@ module.exports = async (req, res, next) => {
             console.error('[FFmpeg] fallo, guardando original:', err);
             // Fallback: buffer original y extensión original
             req.processedAudio = {
-                buffer: req.file.buffer,
                 filename: `audio-${Date.now()}${path.extname(req.file.originalname).toLowerCase()}`,
+                originalPath: req.file.path,
+                isFallback: true,
                 duration: durationSec
             };
             next();
@@ -54,7 +51,8 @@ module.exports = async (req, res, next) => {
         req.processedAudio = {
             buffer: Buffer.concat(chunks),
             filename: `audio-${Date.now()}${targetExt}`,
-            duration: durationSec
+            duration: durationSec,
+            originalPath: req.file.path
         };
         next();
     });

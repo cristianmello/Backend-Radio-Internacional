@@ -1,12 +1,19 @@
 // Reemplaza TODO tu archivo con este código
 require('dotenv').config();
-
 const { Sequelize } = require('sequelize');
-let database;
+
+let sequelize;
+
+const poolOptions = {
+  max: 10,
+  min: 0,
+  acquire: 30000,
+  idle: 10000
+};
 
 if (process.env.NODE_ENV === 'production') {
 
-  database = new Sequelize(process.env.MYSQL_URL, {
+  sequelize = new Sequelize(process.env.MYSQL_URL, {
     dialect: 'mysql',
     protocol: 'mysql',
     logging: false,
@@ -15,13 +22,15 @@ if (process.env.NODE_ENV === 'production') {
         require: true,
         rejectUnauthorized: false
       }
-    }
+    },
+    pool: poolOptions
   });
 
 } else {
   database = new Sequelize(process.env.MYSQL_URL, {
     dialect: 'mysql',
     logging: true,
+    pool: poolOptions
   });
 }
 

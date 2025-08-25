@@ -79,12 +79,12 @@ app.use((req, res, next) => {
   if (contentType.startsWith('multipart/form-data')) {
     return next();
   }
-  express.json({ limit: '6mb' })(req, res, next);
+  express.json({ limit: '2mb' })(req, res, next);
 });
 
 
 // 5) Body parsers con size limit 
-app.use(express.urlencoded({ limit: '6mb', extended: true }));
+app.use(express.urlencoded({ limit: '100kb', extended: true }));
 app.disable('x-powered-by');
 
 const apiLimiter = rateLimit({
@@ -114,6 +114,7 @@ const csrfExclusionPaths = [
   '/api/users/send-verification-email',
   '/api/users/verify-email',
   '/api/users/refresh-token',
+  '/api/sitemap/regenerate'
 ];
 
 // Crea el middleware CSRF con la configuración correcta

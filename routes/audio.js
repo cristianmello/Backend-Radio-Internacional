@@ -44,11 +44,26 @@ router.get(
 );
 
 router.get(
+    '/history',
+    authenticate,
+    authorize('editor', 'admin', 'superadmin'),
+    GetAudioHistory
+);
+
+router.get(
+    '/history/csv',
+    authenticate,
+    authorize('editor', 'admin', 'superadmin'),
+    GetAudioHistoryCSV
+);
+
+router.get(
     '/:id',
     validateGetAudioById,
     handleValidationErrors,
     GetAudioByID
 );
+
 
 // Protected routes
 router.post(
@@ -78,20 +93,6 @@ router.delete(
     authenticate,
     authorize('editor', 'admin', 'superadmin'),
     DeleteAudio
-);
-
-router.get(
-    '/history',
-    authenticate,
-    authorize('editor', 'admin', 'superadmin'),
-    GetAudioHistory
-);
-
-router.get(
-    '/history/csv',
-    authenticate,
-    authorize('editor', 'admin', 'superadmin'),
-    GetAudioHistoryCSV
 );
 
 module.exports = router;

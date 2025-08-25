@@ -2,11 +2,10 @@
 const AudioLog = require('../../models/audio_log');
 const Audio = require('../../models/audios');
 const redisClient = require('../../services/redisclient');
+const { deleteFromBunny } = require('../../services/bunnystorage');
 
-/**
- * Borra todas las claves que casen con un patrón usando SCAN + DEL en bloques.
- */
 async function clearByPattern(pattern) {
+    if (!redisClient) return;
     let cursor = '0';
     do {
         const [nextCursor, keys] = await redisClient.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
@@ -19,23 +18,23 @@ async function clearByPattern(pattern) {
 
 module.exports = async (req, res) => {
     const t = await Audio.sequelize.transaction();
-    let transactionFinished = false;
 
     try {
         const { id } = req.params;
 
-        // 1) Cargamos la nota de audio en la transacción
         const audio = await Audio.findByPk(id, { transaction: t });
         if (!audio) {
             await t.rollback();
-            transactionFinished = true;
             return res.status(404).json({
                 status: 'error',
                 message: 'Nota de audio no encontrada.',
             });
         }
 
-        // 2) Creamos el log antes de la eliminación
+        // 1. Guardamos la URL del archivo ANTES de borrar el registro
+        const audioUrlToDelete = audio.audio_url;
+
+        // Creamos el log antes de la eliminación
         if (req.user) {
             await AudioLog.create({
                 user_id: req.user.id,
@@ -49,14 +48,21 @@ module.exports = async (req, res) => {
             }, { transaction: t });
         }
 
-        // 3) Eliminamos la nota de audio
+        // Eliminamos la nota de audio de la base de datos
         await audio.destroy({ transaction: t });
 
-        // 4) Confirmamos la transacción
+        // Confirmamos la transacción
         await t.commit();
-        transactionFinished = true;
 
-        // 5) Limpiamos caché en Redis
+        // 2. DESPUÉS del commit, borramos el archivo de BunnyCDN
+        //    Lo hacemos de forma "fire-and-forget" para que la respuesta al usuario sea rápida.
+        if (audioUrlToDelete) {
+            deleteFromBunny(audioUrlToDelete).catch(err =>
+                console.error(`Fallo al eliminar archivo de BunnyCDN: ${audioUrlToDelete}`, err)
+            );
+        }
+
+        // Limpiamos caché en Redis
         await clearByPattern(`audio:${id}`);
         await clearByPattern('audios:*');
         await clearByPattern('draftsaudios:*');
@@ -67,7 +73,8 @@ module.exports = async (req, res) => {
             message: 'Nota de audio eliminada correctamente.',
         });
     } catch (error) {
-        if (!transactionFinished) {
+        // 3. Simplificamos el manejo de errores
+        if (t && !t.finished) {
             await t.rollback();
         }
         console.error('[Audios][Delete]', error);

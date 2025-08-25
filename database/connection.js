@@ -27,11 +27,11 @@ if (process.env.NODE_ENV === 'production') {
   });
 
 } else {
-  database = new Sequelize(process.env.MYSQL_URL, {
+  sequelize = new Sequelize(process.env.MYSQL_URL, {
     dialect: 'mysql',
     logging: true,
     pool: poolOptions
   });
 }
 
-module.exports = database;
+module.exports = sequelize;

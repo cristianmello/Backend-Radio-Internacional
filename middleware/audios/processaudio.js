@@ -3,7 +3,6 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const stream = require('stream');
 const path = require('path');
-const { parseFile } = require('music-metadata');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -12,7 +11,9 @@ module.exports = async (req, res, next) => {
 
     let durationSec = null;
     try {
-        const metadata = await parseFile(req.file.path);
+        const mm = await import('music-metadata');
+
+        const metadata = await mm.parseFile(req.file.path);
         durationSec = Math.floor(metadata.format.duration);
     } catch (err) {
         console.warn('[processAudio] no se pudo leer duración:', err.message);

@@ -18,6 +18,7 @@ const GetProfileChangeHistoryCSV = async (req, res) => {
 
         const changes = await ProfileChangeLog.findAll({
             where,
+            limit: 10000,
             include: [
                 { model: User, as: 'user', attributes: ['user_code', 'user_name', 'user_mail'] },
                 { model: User, as: 'editor', attributes: ['user_name'] }

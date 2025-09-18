@@ -5,10 +5,10 @@ const { Sequelize } = require('sequelize');
 let sequelize;
 
 const poolOptions = {
-  max: 10,
-  min: 0,
-  acquire: 30000,
-  idle: 10000
+  max: 25,
+  min: 5,
+  acquire: 60000,
+  idle: 30000
 };
 
 if (process.env.NODE_ENV === 'production') {

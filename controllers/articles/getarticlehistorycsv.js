@@ -23,6 +23,7 @@ const getArticleHistoryCSV = async (req, res) => {
 
         const logs = await ArticleLog.findAll({
             where,
+            limit: 10000,
             include: [
                 { model: User, as: 'user', attributes: ['user_name', 'user_mail'] },
                 { model: Article, as: 'article', attributes: ['article_title'] }

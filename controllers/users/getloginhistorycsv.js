@@ -20,6 +20,7 @@ const getLoginHistoryCSV = async (req, res) => {
 
         const logs = await LoginLog.findAll({
             where,
+            limit: 10000,
             include: [
                 {
                     model: User,

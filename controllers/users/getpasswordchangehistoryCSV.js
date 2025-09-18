@@ -20,6 +20,7 @@ const getPasswordChangeHistoryCSV = async (req, res) => {
 
         const logs = await PasswordChangeLog.findAll({
             where,
+            limit: 10000,
             include: [
                 {
                     model: User,

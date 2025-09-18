@@ -61,13 +61,26 @@ app.use((req, res, next) => {
 
 // 3) HTTP logger 
 app.use((req, res, next) => {
-  logger.info({
-    message: 'HTTP Request',
-    method: req.method,
-    url: req.originalUrl,
-    ip: req.ip,
-    requestId: req.id
-  });
+  if (process.env.NODE_ENV === 'production') {
+    // Solo loggear POST, PUT, DELETE  
+    if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+      logger.info({
+        message: 'HTTP Request',
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        requestId: req.id
+      });
+    }
+  } else {
+    logger.info({
+      message: 'HTTP Request',
+      method: req.method,
+      url: req.originalUrl,
+      ip: req.ip,
+      requestId: req.id
+    });
+  }
   next();
 });
 

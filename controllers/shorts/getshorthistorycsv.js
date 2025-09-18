@@ -25,6 +25,7 @@ const getShortHistoryCSV = async (req, res) => {
         // Obtener logs con category incluido
         const logs = await ShortLog.findAll({
             where,
+            limit: 10000,
             include: [
                 { model: User, as: 'user', attributes: ['user_name', 'user_mail'] },
                 {

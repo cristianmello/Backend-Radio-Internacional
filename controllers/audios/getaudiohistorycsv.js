@@ -23,6 +23,7 @@ const getAudioHistoryCSV = async (req, res) => {
 
         const logs = await AudioLog.findAll({
             where,
+            limit: 10000,
             include: [
                 { model: User, as: 'user', attributes: ['user_name', 'user_mail'] },
                 { model: Audio, as: 'audio', attributes: ['audio_title'] }

@@ -19,7 +19,6 @@ module.exports = async (req, res) => {
 
         const data = await getOrSetCache(cacheKey, async () => {
             const [allSections, allCategories] = await Promise.all([
-                // --- TAREA 1: Obtener TODAS las secciones y su contenido en UNA SOLA QUERY ---
                 Section.findAll({
                     include: [
                         {
@@ -33,7 +32,6 @@ module.exports = async (req, res) => {
                                 { model: ArticleCategory, as: 'category', attributes: ['category_name', 'category_slug'] }
                             ]
                         },
-                        // --- 3. Añadir el include para Shorts ---
                         {
                             model: Short,
                             as: 'shorts',
@@ -75,7 +73,6 @@ module.exports = async (req, res) => {
                     ]
                 }),
 
-                // --- TAREA 2: Obtener todas las categorías (sin cambios) ---
                 ArticleCategory.findAll({
                     order: [['category_code', 'ASC']],
                     attributes: ['category_code', 'category_name', 'category_slug'],

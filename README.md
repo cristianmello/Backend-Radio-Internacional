@@ -102,17 +102,65 @@ Sigue estos pasos para levantar el servidor en un entorno local.
 Una vez configurado tu archivo `.env`, ejecuta los siguientes comandos para preparar la base de datos:
 
 1.  **Ejecuta las migraciones** para crear las tablas:
-    ```bash
-    npx sequelize-cli db:migrate
-    ```
+```bash
+npx sequelize-cli db:migrate
+```
 
 2.  **(Opcional) Ejecuta los seeders** para poblar la base de datos con datos iniciales (como los roles y el superadmin):
-    ```bash
-    npx sequelize-cli db:seed:all
-    ```
+```bash
+npx sequelize-cli db:seed:all
+```
 
 ### Iniciar el Servidor
 
-- Para iniciar en **modo desarrollo** (con recarga automática):
-  ```bash
-  npm run dev
+# Modo desarrollo con recarga automática  
+npm run dev  
+
+# Modo producción  
+npm start  
+
+# Resetear base de datos completa  
+npm run reset  
+
+# Limpiar logs del sistema  
+npm run clean-logs  
+
+# Generar sitemap SEO  
+npm run generate-sitemap
+
+# Obtener página de inicio  
+GET http://localhost:[PUERTO]/api/pages/home  
+
+# Listar artículos  
+GET http://localhost:[PUERTO]/api/articles  
+
+# Listar secciones  
+GET http://localhost:[PUERTO]/api/sections  
+
+# Listar categorías  
+GET http://localhost:[PUERTO]/api/categories  
+
+# Listar anuncios  
+GET http://localhost:[PUERTO]/api/advertisements
+
+Backend-Radio-Internacional/  
+├── controllers/           # Lógica de negocio de la aplicación  
+│   ├── articles/         # Controladores para artículos  
+│   ├── audios/          # Controladores para contenido de audio  
+│   ├── advertisement/   # Controladores para anuncios  
+│   ├── sections/        # Controladores para secciones de la página  
+│   ├── users/           # Controladores para gestión de usuarios  
+│   └── pages/           # Controladores para páginas especiales  
+├── middleware/           # Middlewares personalizados  
+│   ├── articles/        # Middlewares específicos para artículos  
+│   ├── audios/          # Middlewares para procesamiento de audio  
+│   ├── sections/        # Validaciones para secciones  
+│   └── advertisement/   # Middlewares para anuncios  
+├── models/              # Modelos de Sequelize (base de datos)  
+├── routes/              # Definición de rutas de la API  
+├── services/            # Servicios externos (Redis, BunnyCDN, etc.)  
+├── database/            # Configuración y migraciones de BD  
+│   ├── migrations/      # Migraciones de base de datos  
+│   └── seeders/         # Datos iniciales  
+├── utils/               # Utilidades y helpers  
+└── index.js            # Punto de entrada de la aplicación  

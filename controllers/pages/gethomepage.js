@@ -24,9 +24,12 @@ module.exports = async (req, res) => {
                         {
                             model: Article,
                             as: 'articles',
+                            limit: 15,
+                            separate: true,
                             where: { article_is_published: true },
                             required: false, // LEFT JOIN
                             through: { attributes: [] },
+                            order: [[SectionArticleMap, 'position', 'ASC']],
                             include: [
                                 { model: User, as: 'author', attributes: ['user_name', 'user_lastname'] },
                                 { model: ArticleCategory, as: 'category', attributes: ['category_name', 'category_slug'] }
@@ -35,9 +38,12 @@ module.exports = async (req, res) => {
                         {
                             model: Short,
                             as: 'shorts',
+                            limit: 15,
+                            separate: true,
                             where: { short_is_published: true },
                             required: false, // LEFT JOIN
                             through: { attributes: [] },
+                            order: [[SectionShortMap, 'position', 'ASC']],
                             include: [ // Los shorts también pueden tener autor y categoría
                                 { model: User, as: 'author', attributes: ['user_name', 'user_lastname'] },
                                 { model: ArticleCategory, as: 'category', attributes: ['category_name', 'category_slug'] }
@@ -47,7 +53,8 @@ module.exports = async (req, res) => {
                             model: Audio,
                             as: 'audios',
                             required: false, // LEFT JOIN
-                            through: { attributes: [] }
+                            through: { attributes: [] },
+                            order: [[SectionAudioMap, 'position', 'ASC']]
                         },
                         {
                             model: Advertisement,
@@ -60,16 +67,13 @@ module.exports = async (req, res) => {
                                 ]
                             },
                             required: false, // LEFT JOIN
-                            through: { attributes: [] }
+                            through: { attributes: [] },
+                            order: [[SectionAdvertisementMap, 'position', 'ASC']]
                         }
                     ],
                     // Se ordena por la posición de la sección y luego por la posición de los ítems dentro de cada relación
                     order: [
-                        ['section_position', 'ASC'],
-                        [{ model: Article, as: 'articles' }, SectionArticleMap, 'position', 'ASC'],
-                        [{ model: Short, as: 'shorts' }, SectionShortMap, 'position', 'ASC'], // <--- 4. Añadir orden para Shorts
-                        [{ model: Audio, as: 'audios' }, SectionAudioMap, 'position', 'ASC'],
-                        [{ model: Advertisement, as: 'advertisements' }, SectionAdvertisementMap, 'position', 'ASC']
+                        ['section_position', 'ASC']
                     ]
                 }),
 

@@ -24,7 +24,6 @@ module.exports = async (req, res) => {
                         {
                             model: Article,
                             as: 'articles',
-                            limit: 15,
                             where: { article_is_published: true },
                             required: false, // LEFT JOIN
                             through: { attributes: [] },

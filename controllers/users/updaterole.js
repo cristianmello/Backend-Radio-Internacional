@@ -5,7 +5,7 @@ const RoleChangeLog = require('../../models/rolechangelog'); // Importar el mode
 const changeUserRole = async (req, res) => {
     try {
         const user_code = parseInt(req.params.user_code, 10);
-        const { new_role_code } = req.body;
+        const new_role_code = req.body.new_role_code || req.body.selectedRole;
         const changed_by = req.user.id;
 
         if (!user_code || !new_role_code) {
@@ -20,7 +20,7 @@ const changeUserRole = async (req, res) => {
         if (user.role_code === new_role_code) {
             return res.status(400).json({ message: 'El usuario ya tiene asignado ese rol' });
         }
-        
+
         const role = await Role.findByPk(new_role_code);
         if (!role) {
             return res.status(404).json({ message: 'Rol no encontrado' });

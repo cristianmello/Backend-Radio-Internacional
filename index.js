@@ -15,6 +15,7 @@ const { v4: uuidv4 } = require('uuid');
 const { buildSitemap } = require('./generate-sitemap.cjs');
 const database = require('./database/connection');
 const getHomePageData = require('./controllers/pages/gethomepage');
+const fileMemoryMonitor = require('./middleware/filememorymonitor');
 
 require('./database/associations');
 
@@ -83,6 +84,9 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use(require('./middleware/memorymonitor.js'));
+app.use(fileMemoryMonitor);
 
 // 4) Response compression 
 app.use(compression());

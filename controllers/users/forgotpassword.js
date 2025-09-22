@@ -56,9 +56,16 @@ const forgotPassword = async (req, res) => {
     await redisClient.set(`reset_user_${userCode}`, resetToken, 'EX', 60 * 60); // 1 hora
     await redisClient.set(`reset_token_${resetToken}`, userCode, 'EX', 60 * 60);
 
-    // Construir el link de recuperación
-    const resetLink = `${CLIENT_URL}/reset-password?token=${resetToken}`;
+    const requestOrigin = req.get('origin');
+    const allowedOrigins = [CLIENT_URL, 'https://front-radio-internacional.pages.dev'];
 
+    // Construir el link de recuperación
+    const baseUrl = (requestOrigin && allowedOrigins.includes(requestOrigin))
+      ? requestOrigin
+      : CLIENT_URL;
+
+    const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
+    
     // Enviar email
     await mailTransporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,

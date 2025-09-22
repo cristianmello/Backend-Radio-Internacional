@@ -34,7 +34,14 @@ const sendVerificationEmail = async (req, res) => {
     const verifyToken = crypto.randomBytes(32).toString('hex');
     await redisClient.set(`verify_${verifyToken}`, user.user_code, 'EX', 24 * 60 * 60);
 
-    const link = `${CLIENT_URL}/verify-email?token=${verifyToken}`;
+    const requestOrigin = req.get('origin');
+
+
+    const baseUrl = (requestOrigin && [CLIENT_URL, 'https://front-radio-internacional.pages.dev'].includes(requestOrigin))
+      ? requestOrigin
+      : CLIENT_URL;
+
+    const link = `${baseUrl}/verify-email?token=${verifyToken}`; 
     await mailTransporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
       to: user_mail,

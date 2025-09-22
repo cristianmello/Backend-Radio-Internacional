@@ -47,8 +47,12 @@ app.use(helmet());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 2) CORS (solo desde tu frontend) 
+const allowedOrigins = [
+  process.env.CLIENT_URL, // Este debería ser 'https://realidadnacional.net'
+  'https://front-radio-internacional.pages.dev'
+];
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true
 }));
@@ -158,12 +162,18 @@ app.use((req, res, next) => {
     }
 
     const token = req.csrfToken();
-    res.cookie('XSRF-TOKEN', token, {
-      domain: '.realidadnacional.net',
+    const cookieOptions = {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       httpOnly: false
-    });
+    };
+
+    // Añade el dominio solo si estamos en producción
+    if (process.env.NODE_ENV === 'production') {
+      cookieOptions.domain = '.realidadnacional.net';
+    }
+
+    res.cookie('XSRF-TOKEN', token, cookieOptions);
 
     next();
   });

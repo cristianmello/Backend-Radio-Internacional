@@ -46,25 +46,36 @@ const login = async (req, res) => {
     }
   }
 
-  res.cookie('refreshToken', refreshToken, {
+  // Opciones para la cookie refreshToken
+  const refreshTokenCookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax', // Cambiado de 'strict' a 'lax'
     path: '/',
     maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
-  });
+  };
+  // En un entorno de desarrollo/prueba, podríamos necesitar 'none' y secure:true
+  // pero 'lax' suele ser un buen punto de partida.
 
-  // ⚡️ Generar y enviar cookie XSRF-TOKEN visible para el frontend
+  res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
+
+
+  // Opciones para la cookie XSRF-TOKEN
   if (req.csrfToken) {
-    res.cookie('XSRF-TOKEN', req.csrfToken(), {
-      httpOnly: false,                  // visible para JS
+    const xsrfCookieOptions = {
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      domain: '.realidadnacional.net',  // importante: dominio raíz
       path: '/'
-    });
-  }
+    };
 
+    // Añade el dominio solo si estamos en producción
+    if (process.env.NODE_ENV === 'production') {
+      xsrfCookieOptions.domain = '.realidadnacional.net';
+    }
+
+    res.cookie('XSRF-TOKEN', req.csrfToken(), xsrfCookieOptions);
+  }
 
   try {
     await LoginLog.create({

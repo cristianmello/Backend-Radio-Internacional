@@ -60,8 +60,8 @@ const refreshToken = async (req, res) => {
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',               // ← así vive en todo el dominio
+      sameSite: 'lax',
+      path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 30 // 30 días
     });
 

@@ -33,6 +33,11 @@ const forgotPassword = async (req, res) => {
       });
     }
 
+    res.status(200).json({
+      status: 'success',
+      message: 'Si existe una cuenta con ese correo, enviaremos instrucciones para restablecer la contraseña.'
+    });
+
     const userCode = user.user_code;
 
     // Registrar log de intento de recuperación
@@ -65,9 +70,9 @@ const forgotPassword = async (req, res) => {
       : CLIENT_URL;
 
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
-    
+
     // Enviar email
-    await mailTransporter.sendMail({
+    mailTransporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
       to: user_mail,
       subject: '🔑 Restablece tu contraseña',
@@ -83,12 +88,10 @@ const forgotPassword = async (req, res) => {
       <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>
     </div>
   `
-    });
-
-
-    return res.status(200).json({
-      status: 'success',
-      message: 'Si existe, enviaremos un email con instrucciones.'
+    }).catch(err => {
+      // Si falla el envío de email, lo registramos en los logs del servidor
+      // pero el usuario ya recibió su respuesta "OK".
+      console.error(`[Mail Error] Falla al enviar email de recuperación a ${user_mail}:`, err);
     });
 
   } catch (err) {

@@ -37,6 +37,11 @@ const forgotPassword = async (req, res) => {
       });
     }
 
+    res.status(200).json({
+      status: 'success',
+      message: 'Si existe una cuenta con ese correo, se enviarán instrucciones...'
+    });
+
     console.log(`[LOG] Usuario ${user_mail} encontrado. Generando token...`);
 
     const userCode = user.user_code;
@@ -75,7 +80,7 @@ const forgotPassword = async (req, res) => {
     console.log(`[LOG] Preparado para enviar email. La API se detendrá aquí hasta que Brevo responda...`);
 
     // Enviar email
-    await mailTransporter.sendMail({
+    mailTransporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
       to: user_mail,
       subject: '🔑 Restablece tu contraseña',
@@ -91,24 +96,21 @@ const forgotPassword = async (req, res) => {
       <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>
     </div>
   `
+    }).catch(err => {
+      console.error(`[Mail Error] Falla al enviar email de recuperación a ${user_mail}:`, err);
     });
 
     console.log(`[LOG] Email enviado con éxito (respuesta de Brevo recibida). Preparando para enviar respuesta al cliente...`);
 
-
-    return res.status(200).json({
-      status: 'success',
-      message: 'Si existe, enviaremos un email con instrucciones.'
-    });
-
   } catch (err) {
     console.error('[ERROR] Ocurrió un error en el proceso de forgotPassword:', err);
 
-    console.error('[forgotPassword]', err);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Ocurrió un error al procesar la solicitud.'
-    });
+    if (!res.headersSent) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Ocurrió un error al procesar la solicitud.'
+      });
+    }
   }
 };
 

@@ -100,12 +100,14 @@ const forgotPassword = async (req, res) => {
     console.log('[RAILWAY ENV] PORT:', process.env.PORT);
     console.log('[RAILWAY ENV] RAILWAY_ENVIRONMENT:', process.env.RAILWAY_ENVIRONMENT);
 
-    // Enviar email
-    await mailTransporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
-      to: user_mail,
-      subject: '🔑 Restablece tu contraseña',
-      html: `
+    try {
+
+      // Enviar email
+      await mailTransporter.sendMail({
+        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
+        to: user_mail,
+        subject: '🔑 Restablece tu contraseña',
+        html: `
     <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
       <h2 style="color: #007bff;">Restablece tu contraseña</h2>
       <p>Hola <b>${user.user_name || ''}</b>,</p>
@@ -117,9 +119,14 @@ const forgotPassword = async (req, res) => {
       <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>
     </div>
   `
-    });
+      });
+          console.log(`[LOG] Email enviado con éxito (respuesta de Brevo recibida). Preparando para enviar respuesta al cliente...`);
 
-    console.log(`[LOG] Email enviado con éxito (respuesta de Brevo recibida). Preparando para enviar respuesta al cliente...`);
+    } catch (emailError) {
+      console.error('[SMTP ERROR] Email falló, pero continuando:', emailError.code);
+      // No lanzar error, continuar con respuesta exitosa  
+    }
+
 
     return res.status(200).json({
       status: 'success',

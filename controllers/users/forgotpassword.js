@@ -20,8 +20,6 @@ const mailTransporter = nodemailer.createTransport({
   connectionTimeout: 60000, // 60 segundos
   greetingTimeout: 30000,   // 30 segundos  
   socketTimeout: 75000      // 75 segundos  
-
-
 });
 
 const forgotPassword = async (req, res) => {

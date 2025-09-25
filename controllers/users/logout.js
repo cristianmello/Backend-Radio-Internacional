@@ -36,7 +36,7 @@ const logout = async (req, res) => {
   // Limpiar cookie
   res.clearCookie('refreshToken', {
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/'
   });

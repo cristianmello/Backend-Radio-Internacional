@@ -20,6 +20,8 @@ const mailTransporter = nodemailer.createTransport({
 });
 
 const forgotPassword = async (req, res) => {
+  console.log(`[LOG] Iniciando proceso de forgotPassword para: ${req.body.user_mail}`);
+
   const { user_mail } = req.body;
 
   try {
@@ -27,16 +29,15 @@ const forgotPassword = async (req, res) => {
 
     // Se responde éxito para no filtrar emails
     if (!user) {
+      console.log(`[LOG] Usuario no encontrado. Respondiendo 200 para no filtrar información.`);
+
       return res.status(200).json({
         status: 'success',
         message: 'Si existe, enviaremos un email con instrucciones.'
       });
     }
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Si existe una cuenta con ese correo, enviaremos instrucciones para restablecer la contraseña.'
-    });
+    console.log(`[LOG] Usuario ${user_mail} encontrado. Generando token...`);
 
     const userCode = user.user_code;
 
@@ -71,8 +72,10 @@ const forgotPassword = async (req, res) => {
 
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
+    console.log(`[LOG] Preparado para enviar email. La API se detendrá aquí hasta que Brevo responda...`);
+
     // Enviar email
-    mailTransporter.sendMail({
+    await mailTransporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
       to: user_mail,
       subject: '🔑 Restablece tu contraseña',
@@ -88,13 +91,19 @@ const forgotPassword = async (req, res) => {
       <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>
     </div>
   `
-    }).catch(err => {
-      // Si falla el envío de email, lo registramos en los logs del servidor
-      // pero el usuario ya recibió su respuesta "OK".
-      console.error(`[Mail Error] Falla al enviar email de recuperación a ${user_mail}:`, err);
+    });
+
+    console.log(`[LOG] Email enviado con éxito (respuesta de Brevo recibida). Preparando para enviar respuesta al cliente...`);
+
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Si existe, enviaremos un email con instrucciones.'
     });
 
   } catch (err) {
+    console.error('[ERROR] Ocurrió un error en el proceso de forgotPassword:', err);
+
     console.error('[forgotPassword]', err);
     return res.status(500).json({
       status: 'error',

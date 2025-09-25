@@ -66,7 +66,7 @@ const register = async (req, res) => {
             : CLIENT_URL;
 
         const link = `${baseUrl}/verify-email?token=${verifyToken}`;
-        mailTransporter.sendMail({
+        await mailTransporter.sendMail({
             from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
             to: newUser.user_mail,
             subject: '¡Confirma tu correo y activa tu cuenta!',

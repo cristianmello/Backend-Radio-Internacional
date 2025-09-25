@@ -40,11 +40,6 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Si existe una cuenta con ese correo, se enviarán instrucciones...'
-    });
-
     console.log(`[LOG] Usuario ${user_mail} encontrado. Generando token...`);
 
     const userCode = user.user_code;
@@ -102,6 +97,11 @@ const forgotPassword = async (req, res) => {
     });
 
     console.log(`[LOG] Email enviado con éxito (respuesta de Brevo recibida). Preparando para enviar respuesta al cliente...`);
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Si existe una cuenta con ese correo, se enviarán instrucciones...'
+    });
 
   } catch (err) {
     console.error('[ERROR] Ocurrió un error en el proceso de forgotPassword:', err);

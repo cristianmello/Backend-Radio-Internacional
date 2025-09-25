@@ -16,7 +16,12 @@ const mailTransporter = nodemailer.createTransport({
   host: SMTP_HOST,
   port: Number(SMTP_PORT),
   secure: Number(SMTP_PORT) === 465,
-  auth: { user: SMTP_USER, pass: SMTP_PASS }
+  auth: { user: SMTP_USER, pass: SMTP_PASS },
+  connectionTimeout: 60000, // 60 segundos
+  greetingTimeout: 30000,   // 30 segundos  
+  socketTimeout: 75000      // 75 segundos  
+
+
 });
 
 const forgotPassword = async (req, res) => {
@@ -80,7 +85,7 @@ const forgotPassword = async (req, res) => {
     console.log(`[LOG] Preparado para enviar email. La API se detendrá aquí hasta que Brevo responda...`);
 
     // Enviar email
-    mailTransporter.sendMail({
+    await mailTransporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
       to: user_mail,
       subject: '🔑 Restablece tu contraseña',
@@ -96,8 +101,6 @@ const forgotPassword = async (req, res) => {
       <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>
     </div>
   `
-    }).catch(err => {
-      console.error(`[Mail Error] Falla al enviar email de recuperación a ${user_mail}:`, err);
     });
 
     console.log(`[LOG] Email enviado con éxito (respuesta de Brevo recibida). Preparando para enviar respuesta al cliente...`);
@@ -105,12 +108,14 @@ const forgotPassword = async (req, res) => {
   } catch (err) {
     console.error('[ERROR] Ocurrió un error en el proceso de forgotPassword:', err);
 
-    if (!res.headersSent) {
-      return res.status(500).json({
-        status: 'error',
-        message: 'Ocurrió un error al procesar la solicitud.'
-      });
+    if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
+      console.error('[SMTP ERROR] Problema de conectividad con servidor de email');
     }
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Si existe, enviaremos un email con instrucciones.'
+    });
   }
 };
 

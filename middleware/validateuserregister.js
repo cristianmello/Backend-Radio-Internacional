@@ -14,7 +14,12 @@ const validateUserRegister = [
   check('user_mail')
     .notEmpty().withMessage('El correo es obligatorio')
     .isEmail({ allow_display_name: false, domain_specific_validation: true }).withMessage('Debe ser un correo electrónico válido y con un dominio accesible')
-    .normalizeEmail(),
+    .normalizeEmail({
+      gmail_remove_dots: false,
+      outlookdotcom_remove_dots: false,
+      yahoo_remove_dots: false,
+      icloud_remove_dots: false
+    }),
 
   check('user_password')
     .notEmpty().withMessage('La contraseña es obligatoria')

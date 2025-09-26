@@ -12,6 +12,32 @@ const {
   SMTP_PASS
 } = process.env;
 
+const sendEmailViaAPI = async (to, subject, htmlContent) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': "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",
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: {
+        name: SMTP_FROM_NAME,
+        email: SMTP_FROM_ADDRESS
+      },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: htmlContent
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Brevo API error: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
+};
+
 console.log('[ENV VARS] CLIENT_URL:', CLIENT_URL);
 console.log('[ENV VARS] SMTP_HOST:', SMTP_HOST);
 console.log('[ENV VARS] SMTP_PORT:', SMTP_PORT);
@@ -101,32 +127,28 @@ const forgotPassword = async (req, res) => {
     console.log('[RAILWAY ENV] RAILWAY_ENVIRONMENT:', process.env.RAILWAY_ENVIRONMENT);
 
     try {
+      await sendEmailViaAPI(
+        user_mail,
+        '🔑 Restablece tu contraseña',
+        `  
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">  
+      <h2 style="color: #007bff;">Restablece tu contraseña</h2>  
+      <p>Hola <b>${user.user_name || ''}</b>,</p>  
+      <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para continuar:</p>  
+      <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Restablecer contraseña</a>  
+      <p>Este enlace expirará en <b>1 hora</b>.</p>  
+      <p>Si no solicitaste este cambio, ignora este mensaje.</p>  
+      <hr>  
+      <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>  
+    </div>  
+    `
+      );
 
-      // Enviar email
-      await mailTransporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
-        to: user_mail,
-        subject: '🔑 Restablece tu contraseña',
-        html: `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
-      <h2 style="color: #007bff;">Restablece tu contraseña</h2>
-      <p>Hola <b>${user.user_name || ''}</b>,</p>
-      <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para continuar:</p>
-      <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Restablecer contraseña</a>
-      <p>Este enlace expirará en <b>1 hora</b>.</p>
-      <p>Si no solicitaste este cambio, ignora este mensaje.</p>
-      <hr>
-      <p style="font-size: 12px; color: #999;">Este es un mensaje automático. No respondas a este correo.</p>
-    </div>
-  `
-      });
-          console.log(`[LOG] Email enviado con éxito (respuesta de Brevo recibida). Preparando para enviar respuesta al cliente...`);
-
+      console.log(`[LOG] Email enviado con éxito vía API de Brevo`);
     } catch (emailError) {
-      console.error('[SMTP ERROR] Email falló, pero continuando:', emailError.code);
-      // No lanzar error, continuar con respuesta exitosa  
+      console.error('[API ERROR] Email falló:', emailError.message);
+      // Continuar sin fallar  
     }
-
 
     return res.status(200).json({
       status: 'success',

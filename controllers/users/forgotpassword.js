@@ -9,7 +9,9 @@ const {
   SMTP_HOST,
   SMTP_PORT,
   SMTP_USER,
-  SMTP_PASS
+  SMTP_PASS,
+  SMTP_FROM_NAME,  
+  SMTP_FROM_ADDRESS  
 } = process.env;
 
 const sendEmailViaAPI = async (to, subject, htmlContent) => {

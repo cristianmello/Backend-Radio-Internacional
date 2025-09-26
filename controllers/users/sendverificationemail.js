@@ -5,18 +5,35 @@ const crypto = require('crypto');
 
 const {
   CLIENT_URL,
-  SMTP_HOST,
-  SMTP_PORT,
-  SMTP_USER,
-  SMTP_PASS
+  SMTP_FROM_NAME,
+  SMTP_FROM_ADDRESS
 } = process.env;
 
-const mailTransporter = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: Number(SMTP_PORT),
-  secure: SMTP_PORT == 465,
-  auth: { user: SMTP_USER, pass: SMTP_PASS }
-});
+const sendEmailViaAPI = async (to, subject, htmlContent) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': process.env.BREVO_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: {
+        name: SMTP_FROM_NAME,
+        email: SMTP_FROM_ADDRESS
+      },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: htmlContent
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Brevo API error: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
+};
 
 const sendVerificationEmail = async (req, res) => {
   try {
@@ -41,21 +58,25 @@ const sendVerificationEmail = async (req, res) => {
       ? requestOrigin
       : CLIENT_URL;
 
-    const link = `${baseUrl}/verify-email?token=${verifyToken}`; 
-    await mailTransporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_ADDRESS}>`,
-      to: user_mail,
-      subject: 'Verifica tu correo',
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
-          <h2>📧 Verificación de correo</h2>
-          <p>Hola ${user.user_name || ''},</p>
-          <p>Para verificar tu cuenta haz clic en el siguiente enlace:</p>
-          <p><a href="${link}" style="color: #1a73e8;">Verificar correo</a></p>
-          <p>Este enlace expirará en 24 horas.</p>
-        </div>
-      `
-    });
+    const link = `${baseUrl}/verify-email?token=${verifyToken}`;
+    try {
+      await sendEmailViaAPI(
+        user_mail,
+        'Verifica tu correo',
+        `  
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto;">  
+          <h2>📧 Verificación de correo</h2>  
+          <p>Hola ${user.user_name || ''},</p>  
+          <p>Para verificar tu cuenta haz clic en el siguiente enlace:</p>  
+          <p><a href="${link}" style="color: #1a73e8;">Verificar correo</a></p>  
+          <p>Este enlace expirará en 24 horas.</p>  
+        </div>  
+        `
+      );
+    } catch (emailError) {
+      console.error('[API ERROR] Email de verificación falló:', emailError.message);
+      // Continuar sin fallar - el usuario puede reenviar el email después  
+    }
 
     return res.json({
       status: 'success',
